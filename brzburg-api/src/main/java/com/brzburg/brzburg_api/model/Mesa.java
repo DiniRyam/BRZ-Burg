@@ -7,7 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-//aqui dis que é uma tabela para o jpa  e cria ela com o nome mesas no banco
+//aqui diz que é uma tabela para o jpa e o hibernate e cria ela com o nome mesas la no banco
 @Entity
 @Table(name = "mesas")
 public class Mesa {
@@ -25,11 +25,10 @@ public class Mesa {
     @Column(name = "status", nullable = false, length = 50)
     private String status;
 
-    //construtor vazio para o JPA para criar tabelas no banco
+    //construtor vazio para o JPA para criar tabelas no banco com o hibernate
     public Mesa() {
     }
 
-    //metodos getters e setters
     public Integer getId() {
         return id;
     }
