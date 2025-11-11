@@ -59,7 +59,7 @@ public class AdminController {
         }
     }
 
-    // crud novo de funcionarios, e lista os funcionarios
+    // crud novo de funcionarios, e lista todos os funcionarios
     @GetMapping("/funcionarios")
     public List<Funcionario> getFuncionariosAtivos() {
         // usa a jasonproperty write_only no model para a senha nunca ser enviada como resposta json
