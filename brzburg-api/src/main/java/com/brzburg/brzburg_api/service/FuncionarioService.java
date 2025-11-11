@@ -3,6 +3,7 @@ package com.brzburg.brzburg_api.service;
 import com.brzburg.brzburg_api.model.Funcionario;
 import com.brzburg.brzburg_api.repository.FuncionarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,8 +17,17 @@ public class FuncionarioService {
     @Autowired 
     private FuncionarioRepository funcionarioRepository;
 
+    //usa o passwordencoder do securityconfig
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
      //aqui cria a logica para o post da api para poder criar um funcionario novo, e o active true diz que o funcionario esta ativo
     public Funcionario criarFuncionario(Funcionario funcionario) {
+
+        // pega a senha que vem em texto no json e transforma num hash
+        String senhaCriptografada = passwordEncoder.encode(funcionario.getSenhaHash());
+        funcionario.setSenhaHash(senhaCriptografada);
+
         funcionario.setActive(true);
         return funcionarioRepository.save(funcionario);
     }
@@ -35,7 +45,10 @@ public class FuncionarioService {
         
         // aqui olha se uma senha nova foi mandada
         if (dadosFuncionario.getSenhaHash() != null && !dadosFuncionario.getSenhaHash().isEmpty()) {
-            funcionario.setSenhaHash(dadosFuncionario.getSenhaHash()); 
+
+            // criptografa a nova senha antes de salvar
+            String novaSenhaCriptografada = passwordEncoder.encode(dadosFuncionario.getSenhaHash());
+            funcionario.setSenhaHash(novaSenhaCriptografada); 
         }
 
         // aqui salva o funcionario no banco
