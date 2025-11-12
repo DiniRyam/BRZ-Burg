@@ -178,6 +178,4 @@ public class AdminController {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
-
-    
 }
