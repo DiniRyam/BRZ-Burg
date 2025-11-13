@@ -3,7 +3,6 @@ package com.brzburg.brzburg_api.service;
 import com.brzburg.brzburg_api.model.Funcionario;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,68 +17,45 @@ import java.util.Map;
 @Service
 public class TokenService {
 
-    // Chave secreta definida no application.properties
     @Value("${app.jwt.secret}")
     private String jwtSecret;
 
-    // Expiração de 24 horas (em milissegundos)
-    private static final long EXPIRATION_TIME = 86_400_000L;
-
-    // Objeto SecretKey (gerado a partir da string jwtSecret)
+    private static final long EXPIRATION_TIME = 86_400_000L; // 24h
     private SecretKey key;
 
-    // O método @PostConstruct roda uma vez quando o serviço é criado
     @PostConstruct
     public void initKey() {
         if (jwtSecret == null || jwtSecret.length() < 32) {
-            throw new IllegalStateException("A chave JWT (app.jwt.secret) deve ter pelo menos 32 caracteres para HS256."
-            );
+            throw new IllegalStateException("A chave JWT (app.jwt.secret) deve ter pelo menos 32 caracteres.");
         }
-
-        // Converte a string secreta em uma chave criptográfica segura
         this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    // Gera um novo token JWT para o funcionário autenticado
     public String gerarToken(Funcionario funcionario) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("nome", funcionario.getNome());
         claims.put("funcao", funcionario.getFuncao());
 
         return Jwts.builder()
-
-                // Identificação do dono do token
-                .setSubject(funcionario.getLogin())
-                
-                // Quem gerou o token            
-                .setIssuer("BRZ-Burg-API")
-
-                // Data de criação                    
-                .setIssuedAt(new Date())
-                
-                // Expiração                      
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) 
-                
-                // Informações extras (nome, função)
-                .addClaims(claims)       
-                
-                // Algoritmo + chave                     
-                .signWith(this.key) 
-                
-                // Gera o token final
-                .compact();                                   
+                .subject(funcionario.getLogin())
+                .issuer("BRZ-Burg-API")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .claims(claims)
+                .signWith(key) // jjwt 0.12.x aceita signWith(SecretKey)
+                .compact();
     }
 
-    // Extrai os "claims" (informações) de dentro do token JWT
+    // Versão compatível com JJWT 0.12.x
     private Claims getClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(this.key)
+        // parseSignedClaims(token) retorna um objeto que possui getPayload() -> Claims
+        return Jwts.parser()
+                .verifyWith(key)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
-    // olha se o token é valido e nao expirou e assinatura correta
     public boolean isTokenValido(String token) {
         try {
             getClaims(token);
@@ -96,7 +72,6 @@ public class TokenService {
         }
     }
 
-    // extrai o login vugo subject do token
     public String getLoginDoToken(String token) {
         return getClaims(token).getSubject();
     }

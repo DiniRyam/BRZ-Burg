@@ -18,49 +18,48 @@ import java.io.IOException;
 @Component // Diz ao Spring para gerir este filtro como um componente
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    //o servico de leitura de tokens
     @Autowired
-    private TokenService tokenService; // O nosso serviço que sabe ler tokens
+    private TokenService tokenService; 
 
+    // aqui é para buscar o utilizador vugo funcionario
     @Autowired
-    private FuncionarioRepository funcionarioRepository; // Para buscar o utilizador
+    private FuncionarioRepository funcionarioRepository; 
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 1. Extrair o token do cabeçalho
+        //puxa o token do cabecalho
         String token = extrairToken(request);
 
         if (token != null && tokenService.isTokenValido(token)) {
-            // 2. Se o token for válido, extrair o login
+
+            // se o token for valido ele extrai o login
             String login = tokenService.getLoginDoToken(token);
             
-            // 3. Buscar o utilizador no banco de dados
-            // (O FuncionarioRepository já implementa UserDetails implicitamente se Funcionario implementar UserDetails)
-            // Vamos assumir que o Funcionario implementa UserDetails (precisamos de o adicionar)
+            //procura quem esta logando no banco de dados la do repository de funcionario
             UserDetails user = funcionarioRepository.findByLogin(login).orElse(null);
 
             if (user != null) {
-                // 4. Se o utilizador existir, autenticá-lo para esta requisição
-                // (Isto "diz" ao Spring Security que o utilizador está logado)
+
+                // se quem esta tentenaod afzer login existir ai autentica ele e fica logado
                 var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
 
-        // 5. Continua a cadeia de filtros (permite que o pedido prossiga)
+        // continua com os filtros
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * Método auxiliar para extrair o token do cabeçalho "Authorization".
-     * Ex: "Bearer eyJhbGciOiJIUzI1Ni..."
-     */
+    // um metodo auxiliar para extrair o token que vem no cabecalho authorization
     private String extrairToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return null;
         }
-        return authHeader.substring(7); // Remove o "Bearer "
+        // remove o bearer
+        return authHeader.substring(7); 
     }
 }

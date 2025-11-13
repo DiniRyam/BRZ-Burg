@@ -2,11 +2,11 @@ package com.brzburg.brzburg_api.controller;
 
 import com.brzburg.brzburg_api.model.CardapioItem;
 import com.brzburg.brzburg_api.model.CardapioSecao;
-import com.brzburg.brzburg_api.model.Funcionario; 
+import com.brzburg.brzburg_api.model.Funcionario;
 import com.brzburg.brzburg_api.model.Mesa;
 import com.brzburg.brzburg_api.service.CardapioService;
 import com.brzburg.brzburg_api.service.DashboardService;
-import com.brzburg.brzburg_api.service.FuncionarioService; 
+import com.brzburg.brzburg_api.service.FuncionarioService;
 import com.brzburg.brzburg_api.service.MesaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -50,30 +50,31 @@ public class AdminController {
     @PostMapping("/mesas")
     public ResponseEntity<Mesa> criarMesa(@RequestBody Mesa novaMesa) {
         Mesa mesaSalva = mesaService.criarMesa(novaMesa);
-        return new ResponseEntity<>(mesaSalva, HttpStatus.CREATED); 
+        return new ResponseEntity<>(mesaSalva, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/mesas/{id}")
     public ResponseEntity<?> deletarMesa(@PathVariable Integer id) {
         try {
             mesaService.deletarMesa(id);
-            return ResponseEntity.noContent().build(); 
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return new ResponseEntity<>(
-                Map.of("erro", "Mesa em uso", "mensagem", e.getMessage()), 
-                HttpStatus.CONFLICT
-            );
+                    Map.of("erro", "Mesa em uso", "mensagem", e.getMessage()),
+                    HttpStatus.CONFLICT);
         }
     }
 
     // crud novo de funcionarios, e lista todos os funcionarios
     @GetMapping("/funcionarios")
     public List<Funcionario> getFuncionariosAtivos() {
-        // usa a jasonproperty write_only no model para a senha nunca ser enviada como resposta json
+
+        // usa a jasonproperty write_only no model para a senha nunca ser enviada como
+        // resposta json
         return funcionarioService.getFuncionariosAtivos();
     }
 
-    //bosca e retorna funcionarios inativos
+    // bosca e retorna funcionarios inativos
     @GetMapping("/funcionarios/historico")
     public List<Funcionario> getFuncionariosHistorico() {
         return funcionarioService.getFuncionariosInativos();
@@ -86,7 +87,7 @@ public class AdminController {
         return new ResponseEntity<>(funcionarioSalvo, HttpStatus.CREATED);
     }
 
-    //atualiza funcionario que ja existe
+    // atualiza funcionario que ja existe
     @PutMapping("/funcionarios/{id}")
     public ResponseEntity<?> atualizarFuncionario(@PathVariable Integer id, @RequestBody Funcionario dadosFuncionario) {
         try {
@@ -95,9 +96,8 @@ public class AdminController {
         } catch (Exception e) {
             // retorna 404 se o funcionario n existir
             return new ResponseEntity<>(
-                Map.of("erro", "Não encontrado", "mensagem", e.getMessage()), 
-                HttpStatus.NOT_FOUND
-            );
+                    Map.of("erro", "Não encontrado", "mensagem", e.getMessage()),
+                    HttpStatus.NOT_FOUND);
         }
     }
 
@@ -106,12 +106,11 @@ public class AdminController {
     public ResponseEntity<?> arquivarFuncionario(@PathVariable Integer id) {
         try {
             funcionarioService.arquivarFuncionario(id);
-            return ResponseEntity.noContent().build(); 
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return new ResponseEntity<>(
-                Map.of("erro", "Não encontrado", "mensagem", e.getMessage()), 
-                HttpStatus.NOT_FOUND
-            );
+                    Map.of("erro", "Não encontrado", "mensagem", e.getMessage()),
+                    HttpStatus.NOT_FOUND);
         }
     }
 
@@ -122,19 +121,22 @@ public class AdminController {
         return new ResponseEntity<>(novaSecao, HttpStatus.CREATED);
     }
 
-    //implementa aqui o get /api/admin/cardapio/secoes que lista as secoes no front 
+    // implementa aqui o get /api/admin/cardapio/secoes que lista as secoes no front
     @GetMapping("/cardapio/secoes")
     public List<CardapioSecao> getSecoes() {
         return cardapioService.getTodasAsSecoes();
     }
-    
-    //usa o get /api/admin/cardapio-editor com os itens ate os arquivados para o editor de cardapio do admin
+
+    // usa o get /api/admin/cardapio-editor com os itens ate os arquivados para o
+    // editor de cardapio do admin
     @GetMapping("/cardapio-editor")
     public List<CardapioItem> getItensParaEditor() {
         return cardapioService.getItensParaEditor();
     }
 
-    //aqui implementa o post /api/admin/cardapio/itens do upload multipart, que usa requestparam para aceitar o formulario multipart from data com texto e arquivo
+    // aqui implementa o post /api/admin/cardapio/itens do upload multipart, que usa
+    // requestparam para aceitar o formulario multipart from data com texto e
+    // arquivo
     @PostMapping(value = "/cardapio/itens", consumes = "multipart/form-data")
     public ResponseEntity<CardapioItem> criarItem(
             @RequestParam("nome") String nome,
@@ -142,7 +144,7 @@ public class AdminController {
             @RequestParam("preco") BigDecimal preco,
             @RequestParam("secaoId") Integer secaoId,
             @RequestParam(value = "imagem", required = false) MultipartFile imagem) {
-        
+
         try {
             CardapioItem novoItem = cardapioService.criarItem(nome, descricao, preco, secaoId, imagem);
             return new ResponseEntity<>(novoItem, HttpStatus.CREATED);
@@ -151,7 +153,7 @@ public class AdminController {
         }
     }
 
-    //implementa o delete /api/admin/cardapio/itens/{itemId} e faz o softdelete
+    // implementa o delete /api/admin/cardapio/itens/{itemId} e faz o softdelete
     @DeleteMapping("/cardapio/itens/{itemId}")
     public ResponseEntity<?> arquivarItem(@PathVariable Integer itemId) {
         try {
@@ -159,24 +161,25 @@ public class AdminController {
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return new ResponseEntity<>(
-                Map.of("erro", "Não encontrado", "mensagem", e.getMessage()), 
-                HttpStatus.NOT_FOUND
-            );
+                    Map.of("erro", "Não encontrado", "mensagem", e.getMessage()),
+                    HttpStatus.NOT_FOUND);
         }
     }
 
-    // implementa o get /api/admin/itens-disponibilidade e busca os itens arquivados para o admin gerir o estoque
+    // implementa o get /api/admin/itens-disponibilidade e busca os itens arquivados
+    // para o admin gerir o estoque
     @GetMapping("/itens-disponibilidade")
     public List<CardapioItem> getItensDisponibilidade() {
         return cardapioService.getItensDisponibilidade();
     }
 
-    // implementa o put /api/admin/itens-disponibilidade/{itemId} que altera o switch do acabou hoje
+    // implementa o put /api/admin/itens-disponibilidade/{itemId} que altera o
+    // switch do acabou hoje
     @PutMapping("/itens-disponibilidade/{itemId}")
     public ResponseEntity<CardapioItem> setDisponibilidade(
-            @PathVariable Integer itemId, 
+            @PathVariable Integer itemId,
             @RequestBody Map<String, Boolean> disponibilidadeRequest) {
-        
+
         try {
             boolean isDisponivel = disponibilidadeRequest.get("isDisponivel");
             CardapioItem itemAtualizado = cardapioService.setDisponibilidade(itemId, isDisponivel);
@@ -186,20 +189,23 @@ public class AdminController {
         }
     }
 
-    // usa o metodo auxiliar para saber se uma data vem do front mas se nao vier pega o periodo todo
+    // usa o metodo auxiliar para saber se uma data vem do front mas se nao vier
+    // pega o periodo todo
     private LocalDateTime getInicioPeriodo(LocalDateTime inicio) {
         return (inicio != null) ? inicio : LocalDateTime.now().minusYears(100);
     }
+
     private LocalDateTime getFimPeriodo(LocalDateTime fim) {
         return (fim != null) ? fim : LocalDateTime.now();
     }
-    
-    //implementa get /api/reports/kpis com param de data de inicio opcional e fim opcional tambem e usando o dateformiso para usar um padrao
+
+    // implementa get /api/reports/kpis com param de data de inicio opcional e fim
+    // opcional tambem e usando o dateformiso para usar um padrao
     @GetMapping("/reports/kpis")
     public ResponseEntity<Map<String, Object>> getKpis(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
-        
+
         // chama o dashboasrd service criado
         Map<String, Object> kpis = dashboardService.getKpis(getInicioPeriodo(inicio), getFimPeriodo(fim));
         return ResponseEntity.ok(kpis);
@@ -220,7 +226,7 @@ public class AdminController {
     public ResponseEntity<List<Map<String, Object>>> getTopItems(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
-        
+
         List<Map<String, Object>> items = dashboardService.getTopItems(getInicioPeriodo(inicio), getFimPeriodo(fim));
         return ResponseEntity.ok(items);
     }
@@ -230,8 +236,9 @@ public class AdminController {
     public ResponseEntity<List<Map<String, Object>>> getVendasGarcom(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
-        
-        List<Map<String, Object>> vendas = dashboardService.getVendasGarcom(getInicioPeriodo(inicio), getFimPeriodo(fim));
+
+        List<Map<String, Object>> vendas = dashboardService.getVendasGarcom(getInicioPeriodo(inicio),
+                getFimPeriodo(fim));
         return ResponseEntity.ok(vendas);
     }
 
@@ -240,18 +247,19 @@ public class AdminController {
     public ResponseEntity<Map<Integer, BigDecimal>> getVendasHora(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
-        
+
         Map<Integer, BigDecimal> vendas = dashboardService.getVendasHora(getInicioPeriodo(inicio), getFimPeriodo(fim));
         return ResponseEntity.ok(vendas);
     }
 
-    //implementa o get /api/reports/vendas-pagamento
+    // implementa o get /api/reports/vendas-pagamento
     @GetMapping("/reports/vendas-pagamento")
     public ResponseEntity<Map<String, BigDecimal>> getVendasPagamento(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
-        
-        Map<String, BigDecimal> vendas = dashboardService.getVendasPagamento(getInicioPeriodo(inicio), getFimPeriodo(fim));
+
+        Map<String, BigDecimal> vendas = dashboardService.getVendasPagamento(getInicioPeriodo(inicio),
+                getFimPeriodo(fim));
         return ResponseEntity.ok(vendas);
     }
 }
