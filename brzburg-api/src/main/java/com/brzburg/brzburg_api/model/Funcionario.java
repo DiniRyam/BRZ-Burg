@@ -7,12 +7,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import java.util.Collection;
+import java.util.List;
 
 // aqui ele usa o entity pra o springboot usar o ddl-auto=update para criar a tabela
 // as outras @ sao para o hibernate gerar a tabela com os dados da classe
 @Entity
 @Table(name = "funcionarios") 
-public class Funcionario {
+public class Funcionario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // SERIAL
@@ -42,6 +47,48 @@ public class Funcionario {
 
     // Construtor sem nada que o jpa usa por padrao
     public Funcionario() {
+    }
+
+    //define a role do funcionario para a segurança
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+
+    // o spring security vai usar a senha criptografada 
+    @Override
+    public String getPassword() {
+        return this.senhaHash; 
+    }
+
+    // o spring usara o login como username
+    @Override
+    public String getUsername() {
+        return this.login; 
+    }
+
+    // a conta nao expira
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; 
+    }
+    
+    // a conta nunca é bloqueada
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; 
+    }
+
+    // as credenciais nunca expiram
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; 
+    }
+
+    // a conta está ativa se o nosso is_active for true
+    @Override
+    public boolean isEnabled() {
+        return this.isActive; 
     }
 
     public Integer getId() {

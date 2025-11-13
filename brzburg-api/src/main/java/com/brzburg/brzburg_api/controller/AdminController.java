@@ -5,15 +5,18 @@ import com.brzburg.brzburg_api.model.CardapioSecao;
 import com.brzburg.brzburg_api.model.Funcionario; 
 import com.brzburg.brzburg_api.model.Mesa;
 import com.brzburg.brzburg_api.service.CardapioService;
+import com.brzburg.brzburg_api.service.DashboardService;
 import com.brzburg.brzburg_api.service.FuncionarioService; 
 import com.brzburg.brzburg_api.service.MesaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +36,10 @@ public class AdminController {
     // injeta o objeto bean de service de cardapio
     @Autowired
     private CardapioService cardapioService;
+
+    // injeta o objeto bean de servoces do dashboard
+    @Autowired
+    private DashboardService dashboardService;
 
     // usa o crud das mesas ja criada
     @GetMapping("/mesas")
@@ -177,5 +184,74 @@ public class AdminController {
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
+    }
+
+    // usa o metodo auxiliar para saber se uma data vem do front mas se nao vier pega o periodo todo
+    private LocalDateTime getInicioPeriodo(LocalDateTime inicio) {
+        return (inicio != null) ? inicio : LocalDateTime.now().minusYears(100);
+    }
+    private LocalDateTime getFimPeriodo(LocalDateTime fim) {
+        return (fim != null) ? fim : LocalDateTime.now();
+    }
+    
+    //implementa get /api/reports/kpis com param de data de inicio opcional e fim opcional tambem e usando o dateformiso para usar um padrao
+    @GetMapping("/reports/kpis")
+    public ResponseEntity<Map<String, Object>> getKpis(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
+        
+        // chama o dashboasrd service criado
+        Map<String, Object> kpis = dashboardService.getKpis(getInicioPeriodo(inicio), getFimPeriodo(fim));
+        return ResponseEntity.ok(kpis);
+    }
+
+    // implementa o get /api/reports/perdas igual o de cima
+    @GetMapping("/reports/perdas")
+    public ResponseEntity<Map<String, Object>> getPerdas(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
+
+        Map<String, Object> perdas = dashboardService.getPerdas(getInicioPeriodo(inicio), getFimPeriodo(fim));
+        return ResponseEntity.ok(perdas);
+    }
+
+    // implementa o get /api/reports/top-items igual o resto
+    @GetMapping("/reports/top-items")
+    public ResponseEntity<List<Map<String, Object>>> getTopItems(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
+        
+        List<Map<String, Object>> items = dashboardService.getTopItems(getInicioPeriodo(inicio), getFimPeriodo(fim));
+        return ResponseEntity.ok(items);
+    }
+
+    // implementa o get /api/reports/vendas-garcom
+    @GetMapping("/reports/vendas-garcom")
+    public ResponseEntity<List<Map<String, Object>>> getVendasGarcom(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
+        
+        List<Map<String, Object>> vendas = dashboardService.getVendasGarcom(getInicioPeriodo(inicio), getFimPeriodo(fim));
+        return ResponseEntity.ok(vendas);
+    }
+
+    // implementa o get /api/reeports/vendas-hora
+    @GetMapping("/reports/vendas-hora")
+    public ResponseEntity<Map<Integer, BigDecimal>> getVendasHora(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
+        
+        Map<Integer, BigDecimal> vendas = dashboardService.getVendasHora(getInicioPeriodo(inicio), getFimPeriodo(fim));
+        return ResponseEntity.ok(vendas);
+    }
+
+    //implementa o get /api/reports/vendas-pagamento
+    @GetMapping("/reports/vendas-pagamento")
+    public ResponseEntity<Map<String, BigDecimal>> getVendasPagamento(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {
+        
+        Map<String, BigDecimal> vendas = dashboardService.getVendasPagamento(getInicioPeriodo(inicio), getFimPeriodo(fim));
+        return ResponseEntity.ok(vendas);
     }
 }

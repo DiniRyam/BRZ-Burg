@@ -1,4 +1,3 @@
-
 package com.brzburg.brzburg_api.config;
 
 import org.springframework.context.annotation.Bean;
@@ -11,38 +10,48 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-// o configuration diz pro spring que aqui é uma classe de configuração, e ativa o segurança web do spring
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    
+    //injetando o filtro que foi criado no jwtauthenticationfilter
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    // aqui é o bean que vai servir pra criptografar as senhas e vai ser injetado no funcionarioservice com o autowired
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    // mostra o authenticationmanenger como um bean para que o spring rode o processo de autenticacao do authservice
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     // aqui e definido as regras de acesso 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            //desativa a proteção csrf do spring por que a api é restful stateless
             .csrf(csrf -> csrf.disable())
-            
-            // a secao é stateless por que usara tokens para autenticacao
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            
-            // define as regras de autorização pra dizer quem acessa o que
             .authorizeHttpRequests(authorize -> authorize
                 
-                //da acesso publico para essas rotas
-                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                // todas as apis de clientes que nao precisam de login 
+                // rotas publicas principalmente para o cliente
+                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll() 
                 .requestMatchers("/api/cliente/**").permitAll()
 
-                // e exige autenticacao em todas as outras rotas
+                // rotas protegidas
                 .anyRequest().authenticated()
-            );
+            )
+            
+            // aqui dis ao spring para usar o filtro jwtauthenticationfilter antes di login e senha para o filtro do token rodar primeiro em cada pedido
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
