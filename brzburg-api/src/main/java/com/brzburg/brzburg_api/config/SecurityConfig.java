@@ -18,8 +18,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    
-    //injetando o filtro que foi criado no jwtauthenticationfilter
+
+    // Injeta o filtro que foi criado no jwtauthenticationfilter
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -28,29 +28,29 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // mostra o authenticationmanenger como um bean para que o spring rode o processo de autenticacao do authservice
+    // Mostra o authenticationmanenger como um bean para que o spring rode o processo de autenticacao do authservice
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    // aqui e definido as regras de acesso 
+    // Definição das regras de acesso 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                
-                // rotas publicas principalmente para o cliente
+
+                // Rotas públicas principalmente para o cliente
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll() 
                 .requestMatchers("/api/cliente/**").permitAll()
 
-                // rotas protegidas
+                // Rotas protegidas
                 .anyRequest().authenticated()
             )
-            
-            // aqui dis ao spring para usar o filtro jwtauthenticationfilter antes di login e senha para o filtro do token rodar primeiro em cada pedido
+
+            // Aqui diz ao spring para usar o filtro jwtauthenticationfilter antes do login e senha para o filtro do token rodar primeiro em cada pedido
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

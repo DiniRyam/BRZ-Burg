@@ -12,12 +12,12 @@ public class ContasFechadas {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // relacionamento um pra um, uma conta fechada pertence a uma comanda e depende de comanda.java
+    // Relacionamento um pra um, uma conta fechada pertence a uma comanda e depende de comanda.java
     @OneToOne
     @JoinColumn(name = "comanda_id", nullable = false, unique = true)
     private Comanda comanda; 
 
-    //depende de funcionario.java implementado antes 
+    // Depende de funcionario.java implementado antes 
     @ManyToOne
     @JoinColumn(name = "funcionario_id", nullable = false)
     private Funcionario funcionario;
@@ -25,7 +25,7 @@ public class ContasFechadas {
     @Column(name = "valor_total", nullable = false, precision = 10, scale = 2)
     private BigDecimal valorTotal;
 
-    //pega o metodo de pagamento
+    // Pega o método de pagamento
     @Column(name = "metodo_pagamento", nullable = false, length = 50)
     private String metodoPagamento; 
 

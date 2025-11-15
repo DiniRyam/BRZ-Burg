@@ -11,16 +11,16 @@ public class Comanda {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    //depende da classe mesa.java e faz a chave estrangeira aqui com o manytoone e joincolumn
+    // Depende da classe mesa.java e faz a chave estrangeira aqui com o manytoone e joincolumn
     @ManyToOne
     @JoinColumn(name = "mesa_id", nullable = false)
     private Mesa mesa; 
 
-    // status se esta ativa ou fechada
+    // Status se esta ativa ou fechada
     @Column(name = "status", nullable = false, length = 50)
     private String status = "ATIVA"; 
 
-    //se esta nula ou se foi feita a acao de pedir conta
+    // Se esta nula ou se foi feita a acao de pedir conta
     @Column(name = "status_solicitacao", length = 50)
     private String statusSolicitacao; 
 

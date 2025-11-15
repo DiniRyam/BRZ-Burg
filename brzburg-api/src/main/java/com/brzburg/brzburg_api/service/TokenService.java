@@ -37,7 +37,7 @@ public class TokenService {
         claims.put("funcao", funcionario.getFuncao());
 
         return Jwts.builder()
-                .subject(funcionario.getLogin())
+                .subject(funcionario.getUsuario())
                 .issuer("BRZ-Burg-API")
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))

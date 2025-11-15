@@ -7,25 +7,25 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-//aqui diz que é uma tabela para o jpa e o hibernate e cria ela com o nome mesas la no banco
+// Aqui diz que é uma tabela para o jpa e o hibernate e cria ela com o nome mesas no banco
 @Entity
 @Table(name = "mesas")
 public class Mesa {
 
-    //marca o id como chave primaria e cria a coluna id
+    // Marca o id como chave primaria e cria a coluna id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    //aqui cria a coluna nome
+    // Cria a coluna nome
     @Column(name = "nome", nullable = false, length = 100)
     private String nome;
 
-    //aqui cria a coluna status
+    // Cria a coluna status
     @Column(name = "status", nullable = false, length = 50)
     private String status;
 
-    //construtor vazio para o JPA para criar tabelas no banco com o hibernate
+    // Construtor vazio para o JPA para criar tabelas no banco com o hibernate
     public Mesa() {
     }
 
@@ -49,7 +49,6 @@ public class Mesa {
         return status;
     }
 
-    
     public void setStatus(String status) {
         this.status = status;
     }

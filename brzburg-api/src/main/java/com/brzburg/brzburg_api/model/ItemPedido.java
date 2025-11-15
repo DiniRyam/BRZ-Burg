@@ -12,12 +12,12 @@ public class ItemPedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    //depende da classe comanda.java por isso o manytoone e joincolumn
+    // Depende da classe comanda.java por isso o manytoone e joincolumn
     @ManyToOne
     @JoinColumn(name = "comanda_id", nullable = false)
     private Comanda comanda; 
 
-    // depende da classe cardapioitem.java usa joincolumn
+    // Depende da classe cardapioitem.java usa joincolumn
     @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
     private CardapioItem item; 
@@ -28,15 +28,15 @@ public class ItemPedido {
     @Column(name = "observacao", columnDefinition = "TEXT")
     private String observacao;
 
-    //trava de segurança e usa o bigdecimal para os valores
+    // Trava de segurança e usa o bigdecimal para os valores
     @Column(name = "preco_no_momento", nullable = false, precision = 10, scale = 2)
     private BigDecimal precoNoMomento; 
 
-    //status do pedido pendente em preparo cancelado e devolvido
+    // Status do pedido pendente em preparo cancelado e devolvido
     @Column(name = "status", nullable = false, length = 50)
     private String status = "PENDENTE"; 
 
-    //regra dos 60 segundos para cancelar um pedido
+    // Regra dos 60 segundos para cancelar um pedido
     @Column(name = "timestamp_pedido", nullable = false, updatable = false)
     private LocalDateTime timestampPedido = LocalDateTime.now();
 

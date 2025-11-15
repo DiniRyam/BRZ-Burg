@@ -40,7 +40,7 @@ public class FuncionarioService {
         // joga todos os dados novos com os metodos get e set
         funcionario.setNome(dadosFuncionario.getNome());
         funcionario.setCpf(dadosFuncionario.getCpf());
-        funcionario.setLogin(dadosFuncionario.getLogin());
+        funcionario.setUsuario(dadosFuncionario.getUsuario());
         funcionario.setFuncao(dadosFuncionario.getFuncao());
         
         // aqui olha se uma senha nova foi mandada

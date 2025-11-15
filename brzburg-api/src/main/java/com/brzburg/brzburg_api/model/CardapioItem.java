@@ -1,19 +1,19 @@
 package com.brzburg.brzburg_api.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal; // Importante para dinheiro por que usa decimal e nao binario, e usa metodos para calcular
+import java.math.BigDecimal; // Importante para dinheiro por que usa decimal e não binário, e usa métodos para calcular
 
 // Mapeia para o nome da tabela do nosso banco
 @Entity
-@Table(name = "cardapio_itens") 
+@Table(name = "cardapio_itens")
 public class CardapioItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // aqui mostra o relacionamento de que muitos itens pertencem a uma secao, e joincolumn define a coluna que faz a chave estrangeira com a tabela cardapiosecoes
-    @ManyToOne 
+    // Mostra o relacionamento de que muitos itens pertencem a uma seção, e o joincolumn define a coluna que faz a chave estrangeira com a tabela cardapiosecoes
+    @ManyToOne
     @JoinColumn(name = "secao_id", nullable = false)
     private CardapioSecao secao;
 
@@ -23,23 +23,23 @@ public class CardapioItem {
     @Column(name = "descricao", columnDefinition = "TEXT")
     private String descricao;
 
-    // usa o bigdecimal por que é mais preciso que float e double pra mexer com dinheiro com segurança
+    // Usa o bigdecimal por que é mais preciso que float e double pra mexer com dinheiro com segurança
     @Column(name = "preco", nullable = false, precision = 10, scale = 2)
     private BigDecimal preco;
     
-    // a api de upload vai preencher este espaço com as imagens 
+    // A api de upload vai preencher este espaço com as imagens 
     @Column(name = "imagem_url")
-    private String imagemUrl; 
+    private String imagemUrl;
 
-    //usa o isactive para nao excluir diretamente do banco, o softdelete
+    // Usa o isactive para nao excluir diretamente do banco, o softdelete
     @Column(name = "is_active", nullable = false)
-    private boolean isActive = true; 
+    private boolean isActive = true;
 
-    // para o controle de itens do dia sem precisar excluir do cardapio
+    // Controle de itens do dia sem precisar excluir do cardapio
     @Column(name = "is_disponivel", nullable = false)
-    private boolean isDisponivel = true; 
+    private boolean isDisponivel = true;
 
-    // construtor vazio
+    // Construtor vázio
     public CardapioItem() {
     }
 

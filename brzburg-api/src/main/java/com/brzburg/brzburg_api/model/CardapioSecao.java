@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 
 // Mapeia para o nome da tabela
 @Entity
-@Table(name = "cardapio_secoes")  
+@Table(name = "cardapio_secoes")
 public class CardapioSecao {
 
     @Id
@@ -23,7 +23,7 @@ public class CardapioSecao {
     public CardapioSecao() {
     }
 
-    //getters e setters 
+    // Getters e setters
 
     public Integer getId() {
         return id;

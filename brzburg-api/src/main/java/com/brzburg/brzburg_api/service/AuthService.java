@@ -24,7 +24,7 @@ public class AuthService {
     public String login(String login, String senha) throws Exception {
 
         // encontra um funcionario pelo login com o metodo la do funcionariorepository
-        Funcionario funcionario = funcionarioRepository.findByLogin(login)
+        Funcionario funcionario = funcionarioRepository.findByUsuario(login)
                 .orElseThrow(() -> new Exception("Login ou senha inválidos."));
 
         // olha se ele esta ativo

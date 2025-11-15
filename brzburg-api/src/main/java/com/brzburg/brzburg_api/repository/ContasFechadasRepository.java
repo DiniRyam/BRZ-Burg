@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface ContasFechadasRepository extends JpaRepository<ContasFechadas, Integer> {
 
-    // esse é o mais importante para a api que puxa todas as coisas pela data
+    // Esse é o mais importante para a api que puxa todas as coisas pela data
     List<ContasFechadas> findAllByDataFechamentoBetween(LocalDateTime inicio, LocalDateTime fim);
 }

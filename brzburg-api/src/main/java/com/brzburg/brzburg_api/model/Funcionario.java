@@ -13,8 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-// aqui ele usa o entity pra o springboot usar o ddl-auto=update para criar a tabela
-// as outras @ sao para o hibernate gerar a tabela com os dados da classe
+// Aqui ele usa o entity pra o springboot usar o ddl-auto=update para criar a tabela as outras @ sao para o hibernate gerar a tabela com os dados da classe
 @Entity
 @Table(name = "funcionarios") 
 public class Funcionario implements UserDetails {
@@ -29,63 +28,63 @@ public class Funcionario implements UserDetails {
     @Column(name = "cpf", unique = true, nullable = false, length = 11)
     private String cpf;
 
-    @Column(name = "login", unique = true, nullable = false, length = 100)
-    private String login;
+    @Column(name = "usuario", unique = true, nullable = false, length = 100)
+    private String usuario;
 
-     // esse writed_only le o json do front que tem a senha, mas quando devolve um json ele nao manda a senha de volta
+     // Esse writed_only le o json do front que tem a senha, mas quando devolve um json ele nao manda a senha de volta
     @Column(name = "senha_hash", nullable = false)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String senhaHash;
 
-    // aqui tem as roles vugo funcoes admin, cozinheiro e garcom
+    // Aqui tem as roles vugo funções admin, cozinheiro e garcom
     @Column(name = "funcao", nullable = false, length = 50)
     private String funcao;
 
-    //aqui teve que fazer esse active pra nao excluir de vez do banco os dados do dashboard
+    // Aqui teve que fazer esse active pra não excluir de vez do banco os dados do dashboard
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
-    // Construtor sem nada que o jpa usa por padrao
+    // Construtor sem nada que o jpa usa por padrão
     public Funcionario() {
     }
 
-    //define a role do funcionario para a segurança
+    // Define a role do funcionário para a segurança
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
-    // o spring security vai usar a senha criptografada 
+    // O spring security vai usar a senha criptografada
     @Override
     public String getPassword() {
         return this.senhaHash; 
     }
 
-    // o spring usara o login como username
+    // O spring usará o "usuario" como username
     @Override
     public String getUsername() {
-        return this.login; 
+        return this.usuario;
     }
 
-    // a conta nao expira
+    // A conta não expira
     @Override
     public boolean isAccountNonExpired() {
-        return true; 
+        return true;
     }
     
-    // a conta nunca é bloqueada
+    // A conta nunca é bloqueada
     @Override
     public boolean isAccountNonLocked() {
         return true; 
     }
 
-    // as credenciais nunca expiram
+    // As credenciais nunca expiram
     @Override
     public boolean isCredentialsNonExpired() {
         return true; 
     }
 
-    // a conta está ativa se o nosso is_active for true
+    // A conta está ativa se o nosso is_active for true
     @Override
     public boolean isEnabled() {
         return this.isActive; 
@@ -115,12 +114,12 @@ public class Funcionario implements UserDetails {
         this.cpf = cpf;
     }
 
-    public String getLogin() {
-        return login;
+    public String getUsuario() {
+        return usuario;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
     }
 
     public String getSenhaHash() {

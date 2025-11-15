@@ -16,22 +16,22 @@ import java.util.Map;
 @RequestMapping("/api/kds") 
 public class KdsController {
 
-    //inejat o objeto do kdsservice que ficou armazenado pelo springboot
+    // Inejat o objeto do kdsservice que ficou armazenado pelo springboot
     @Autowired
     private KdsService kdsService;
 
-    // implementa o get /api/kds/dashboasrd é o que a cada 5 segundos do polling atualiza as telas do kds e do admin 
+    // Implementa o get /api/kds/dashboasrd é o que a cada 5 segundos do polling atualiza as telas do kds e do admin
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, List<ItemPedido>>> getDashboard() {
         Map<String, List<ItemPedido>> dashboard = kdsService.getDashboard();
         return ResponseEntity.ok(dashboard);
     }
 
-    //implementa o post /pedido/atualizar-status que age quando o cozinheiro move o item para a proxima coluna da sequencia de preparo
+    // Implementa o post /pedido/atualizar-status que age quando o cozinheiro move o item para a proxima coluna da sequencia de preparo
     @PostMapping("/pedido/atualizar-status")
     public ResponseEntity<?> atualizarStatusPedido(@RequestBody Map<String, Integer> request) {
 
-        // recebe um json simples com o id do pedido tipo itemPedidoId: 01
+        // Recebe um json simples com o id do pedido tipo itemPedidoId: 01
         try {
             Integer itemPedidoId = request.get("itemPedidoId");
             ItemPedido itemAtualizado = kdsService.atualizarStatusPedido(itemPedidoId);
@@ -39,7 +39,7 @@ public class KdsController {
 
         } catch (Exception e) {
 
-            // da um erro se o admin que é read-only na tela do kds tentar usar o metodo para atualizar o status de um pedido ou se o item nao for encontrado da um bad request
+            // Retorna um erro se o admin que é read-only na tela do kds tentar usar o mátodo para atualizar o status de um pedido ou se o item nao for encontrado da um bad request
             return new ResponseEntity<>(
                 Map.of("erro", "Falha ao atualizar status", "mensagem", e.getMessage()), 
                 HttpStatus.BAD_REQUEST
