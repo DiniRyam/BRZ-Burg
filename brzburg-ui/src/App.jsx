@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 // Importar páginas
 import Login from './pages/Login';
-// import AdminDashboard from './pages/Admin/AdminDashboard';
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import AdminLayout from './pages/Admin/AdminLayout';
 import KdsPage from './pages/Cozinheiro/KdsPage';
 import GarcomDashboard from './pages/Garcom/GarcomDashboard';
 // import ClienteCardapio from './pages/Cliente/ClienteCardapio';
@@ -31,19 +32,14 @@ function App() {
           path="/garcom" 
           element={<PrivateRoute><GarcomDashboard /></PrivateRoute>} 
         />
-
-        {/* Rota Pública: Cliente via QRCode */}
-        {/* <Route path="/m/:mesaId" element={<ClienteCardapio />} /> */}
-        
-        {/* Rotas Protegidas */}
-        {/* 
         <Route 
           path="/admin/*" 
           element={<PrivateRoute><AdminDashboard /></PrivateRoute>} 
         />
-        
-        */}
 
+        {/* Rota Pública: Cliente via QRCode */}
+        {/* <Route path="/m/:mesaId" element={<ClienteCardapio />} /> */}
+        
         {/* Rota padrão → manda pro login */}
         <Route path="*" element={<Navigate to="/login" />} />
 
