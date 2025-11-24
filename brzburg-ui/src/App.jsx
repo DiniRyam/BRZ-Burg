@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 // import AdminDashboard from './pages/Admin/AdminDashboard';
 import KdsPage from './pages/Cozinheiro/KdsPage';
-// import GarcomDashboard from './pages/Garcom/GarcomDashboard';
+import GarcomDashboard from './pages/Garcom/GarcomDashboard';
 // import ClienteCardapio from './pages/Cliente/ClienteCardapio';
 
 // Rota protegida: só acessa se tiver token no localStorage
@@ -27,6 +27,11 @@ function App() {
           element={<PrivateRoute><KdsPage /></PrivateRoute>} 
         />
 
+        <Route 
+          path="/garcom" 
+          element={<PrivateRoute><GarcomDashboard /></PrivateRoute>} 
+        />
+
         {/* Rota Pública: Cliente via QRCode */}
         {/* <Route path="/m/:mesaId" element={<ClienteCardapio />} /> */}
         
@@ -37,10 +42,6 @@ function App() {
           element={<PrivateRoute><AdminDashboard /></PrivateRoute>} 
         />
         
-        <Route 
-          path="/garcom" 
-          element={<PrivateRoute><GarcomDashboard /></PrivateRoute>} 
-        />
         */}
 
         {/* Rota padrão → manda pro login */}
