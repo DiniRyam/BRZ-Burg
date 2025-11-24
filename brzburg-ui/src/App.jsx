@@ -1,35 +1,54 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+// Importar páginas
+import Login from './pages/Login';
+// import AdminDashboard from './pages/Admin/AdminDashboard';
+// import KdsPage from './pages/Cozinheiro/KdsPage';
+// import GarcomDashboard from './pages/Garcom/GarcomDashboard';
+// import ClienteCardapio from './pages/Cliente/ClienteCardapio';
+
+// Rota protegida: só acessa se tiver token no localStorage
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem('authToken');
+  return token ? children : <Navigate to="/login" />;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        
+        {/* Rota Pública: Login */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* Rota Pública: Cliente via QRCode */}
+        {/* <Route path="/m/:mesaId" element={<ClienteCardapio />} /> */}
+        
+        {/* Rotas Protegidas */}
+        {/* 
+        <Route 
+          path="/admin/*" 
+          element={<PrivateRoute><AdminDashboard /></PrivateRoute>} 
+        />
+
+        <Route 
+          path="/cozinha" 
+          element={<PrivateRoute><KdsPage /></PrivateRoute>} 
+        />
+
+        <Route 
+          path="/garcom" 
+          element={<PrivateRoute><GarcomDashboard /></PrivateRoute>} 
+        />
+        */}
+
+        {/* Rota padrão → manda pro login */}
+        <Route path="*" element={<Navigate to="/login" />} />
+
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
