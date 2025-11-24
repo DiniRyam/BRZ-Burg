@@ -50,7 +50,7 @@ export default function Login() {
         <Card className="p-8">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl">
-              🍔
+                
             </div>
             <h1 className="text-2xl font-bold text-gray-900">BRZ Burg Login</h1>
             <p className="text-gray-500">Entre para aceder ao sistema</p>
