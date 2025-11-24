@@ -2,6 +2,8 @@ package com.brzburg.brzburg_api.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore; // Importante para evitar loops
+import java.util.List; // Importante
 
 @Entity
 @Table(name = "comandas")
@@ -27,6 +29,10 @@ public class Comanda {
     @Column(name = "data_abertura", nullable = false, updatable = false)
     private LocalDateTime dataAbertura = LocalDateTime.now();
 
+    @OneToMany(mappedBy = "comanda") 
+    @JsonIgnore // impede que o JSON entre em loop infinito ao listar comandas
+    private List<ItemPedido> itemPedidos;
+
     public Comanda() {}
 
     public Integer getId() { return id; }
@@ -39,4 +45,13 @@ public class Comanda {
     public void setStatusSolicitacao(String statusSolicitacao) { this.statusSolicitacao = statusSolicitacao; }
     public LocalDateTime getDataAbertura() { return dataAbertura; }
     public void setDataAbertura(LocalDateTime dataAbertura) { this.dataAbertura = dataAbertura; }
+
+    // Novo Getter e Setter para a lista
+    public List<ItemPedido> getItemPedidos() {
+        return itemPedidos;
+    }
+
+    public void setItemPedidos(List<ItemPedido> itemPedidos) {
+        this.itemPedidos = itemPedidos;
+    }
 }
