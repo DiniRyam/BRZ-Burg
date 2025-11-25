@@ -1,49 +1,141 @@
 import api from './api';
 
 const adminService = {
-  // --- DASHBOARD (Relatórios) ---
 
-  // GET /api/admin/reports/kpis?inicio=...&fim=...
+  // relatorios
   getKpis: async (inicio, fim) => {
     const params = {};
     if (inicio) params.inicio = inicio;
     if (fim) params.fim = fim;
     
     const response = await api.get('/api/admin/reports/kpis', { params });
-    return response.data; // { receitaTotal, comandasFechadas, ticketMedio }
+    return response.data; 
   },
 
-  // GET /api/admin/reports/top-items
   getTopItems: async (inicio, fim) => {
     const params = {};
     if (inicio) params.inicio = inicio;
     if (fim) params.fim = fim;
 
     const response = await api.get('/api/admin/reports/top-items', { params });
-    return response.data; // [ { nome, vendidos }, ... ]
+    return response.data; 
   },
 
-  // GET /api/admin/reports/vendas-garcom
   getVendasGarcom: async (inicio, fim) => {
     const params = {};
     if (inicio) params.inicio = inicio;
     if (fim) params.fim = fim;
 
     const response = await api.get('/api/admin/reports/vendas-garcom', { params });
-    return response.data; // [ { nomeGarcom, receitaGerada }, ... ]
+    return response.data; 
   },
 
-   // GET /api/admin/reports/perdas
    getPerdas: async (inicio, fim) => {
     const params = {};
     if (inicio) params.inicio = inicio;
     if (fim) params.fim = fim;
 
     const response = await api.get('/api/admin/reports/perdas', { params });
-    return response.data; // { cancelados: {...}, devolvidos: {...} }
+    return response.data; 
+  },
+  
+  getVendasHora: async (inicio, fim) => {
+    const params = {};
+    if (inicio) params.inicio = inicio;
+    if (fim) params.fim = fim;
+
+    const response = await api.get('/api/admin/reports/vendas-hora', { params });
+    return response.data; 
   },
 
-  // (Aqui adicionaremos as funções de CRUD de Mesas, Cardápio, etc. depois)
+  getVendasPagamento: async (inicio, fim) => {
+    const params = {};
+    if (inicio) params.inicio = inicio;
+    if (fim) params.fim = fim;
+
+    const response = await api.get('/api/admin/reports/vendas-pagamento', { params });
+    return response.data; 
+  },
+
+  // mesas 
+  getMesas: async () => {
+    const response = await api.get('/api/admin/mesas');
+    return response.data;
+  },
+
+  criarMesa: async (nome) => {
+    const response = await api.post('/api/admin/mesas', { nome });
+    return response.data;
+  },
+
+  deletarMesa: async (id) => {
+    await api.delete(`/api/admin/mesas/${id}`);
+  },
+
+  // funcionarios
+  getFuncionarios: async () => {
+    const response = await api.get('/api/admin/funcionarios');
+    return response.data;
+  },
+
+  getHistoricoFuncionarios: async () => {
+    const response = await api.get('/api/admin/funcionarios/historico');
+    return response.data;
+  },
+
+  criarFuncionario: async (funcionario) => {
+    const response = await api.post('/api/admin/funcionarios', funcionario);
+    return response.data;
+  },
+
+  atualizarFuncionario: async (id, funcionario) => {
+    const response = await api.put(`/api/admin/funcionarios/${id}`, funcionario);
+    return response.data;
+  },
+
+  arquivarFuncionario: async (id) => {
+    await api.delete(`/api/admin/funcionarios/${id}`);
+  },
+
+  // cardapio
+  getSecoes: async () => {
+    const response = await api.get('/api/admin/cardapio/secoes');
+    return response.data;
+  },
+
+  criarSecao: async (nomeSecao) => {
+    const response = await api.post('/api/admin/cardapio/secoes', { nomeSecao });
+    return response.data;
+  },
+
+  // Busca todos os itens ativos e inativos para edição
+  getItensEditor: async () => {
+    const response = await api.get('/api/admin/cardapio-editor');
+    return response.data;
+  },
+
+  // Cria item com upload de imagem
+  criarItem: async (formData) => {
+    // nao definimos 'Content-Type' manualmente aqui, o axios/browser faz isso
+    // automaticamente quando vê que é um objeto FormData
+    const response = await api.post('/api/admin/cardapio/itens', formData);
+    return response.data;
+  },
+
+  arquivarItem: async (itemId) => {
+    await api.delete(`/api/admin/cardapio/itens/${itemId}`);
+  },
+
+  // estoque para controle de itens que acabaram em servico
+  getItensDisponibilidade: async () => {
+    const response = await api.get('/api/admin/itens-disponibilidade');
+    return response.data;
+  },
+
+  setDisponibilidade: async (itemId, isDisponivel) => {
+    const response = await api.put(`/api/admin/itens-disponibilidade/${itemId}`, { isDisponivel });
+    return response.data;
+  }
 };
 
 export { adminService };

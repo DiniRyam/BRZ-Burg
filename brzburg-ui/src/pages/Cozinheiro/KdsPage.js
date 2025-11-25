@@ -25,10 +25,10 @@ export default function KdsPage() {
         title="Kitchen Display System" 
       />
 
-      {/* Conteúdo Principal (O Painel) */}
+      {/* Conteúdo Principal */}
       <main className="flex-1 overflow-hidden p-4 relative">
         {/* Renderizamos o PainelKDS.
-            readOnly={false} porque o cozinheiro PODE interagir (clicar para avançar).
+            readOnly={false} porque o cozinheiro PODE interagir clidando e avançando os cards.
          */}
         <div className="h-full w-full bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <PainelKDS readOnly={false} />
