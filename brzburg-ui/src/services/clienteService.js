@@ -1,10 +1,36 @@
 import api from './api';
 
 const clienteService = {
+
+  // Inicia a sessão do cliente
+  iniciarSessao: async (mesaId) => {
+    try {
+      
+      // GET /api/cliente/iniciar-sessao?mesaId=...
+      const response = await api.get(`/api/cliente/iniciar-sessao?mesaId=${mesaId}`);
+      return response.data; // { nomeRestaurante, cardapio, comanda }
+    } catch (error) {
+      console.error("Erro ao iniciar sessão do cliente:", error);
+      throw error;
+    }
+  },
+
+  // envia um novo pedido
+  fazerPedido: async (pedido) => {
+    try {
+
+      // pedido = { mesaId, itemId, quantidade, observacao }
+      const response = await api.post('/api/cliente/pedido', pedido);
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao fazer pedido:", error);
+      throw error;
+    }
+  },
+
   // Busca a comanda ativa (Polling)
   getComanda: async (mesaId) => {
     try {
-      // GET /api/cliente/comanda?mesaId=9
       const response = await api.get(`/api/cliente/comanda?mesaId=${mesaId}`);
       return response.data;
     } catch (error) {
@@ -16,8 +42,6 @@ const clienteService = {
   // Cancela um pedido
   cancelarPedido: async (itemPedidoId) => {
     try {
-      // POST /api/cliente/pedido/cancelar
-      // Enviamos quantidadeCancelar: 1 (por simplicidade, ou poderíamos pedir ao user)
       await api.post('/api/cliente/pedido/cancelar', { 
         itemPedidoId, 
         quantidadeCancelar: 1 
@@ -31,7 +55,6 @@ const clienteService = {
   // Pede a conta
   pedirConta: async (mesaId) => {
     try {
-      // POST /api/cliente/pedir-conta
       await api.post('/api/cliente/pedir-conta', { mesaId });
     } catch (error) {
       console.error("Erro ao pedir conta:", error);
