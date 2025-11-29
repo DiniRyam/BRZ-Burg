@@ -51,7 +51,8 @@ public class Funcionario implements UserDetails {
     // Define a role do funcionário para a segurança
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        if (this.funcao == null) return List.of();
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.funcao.toUpperCase()));
     }
 
     // O spring security vai usar a senha criptografada

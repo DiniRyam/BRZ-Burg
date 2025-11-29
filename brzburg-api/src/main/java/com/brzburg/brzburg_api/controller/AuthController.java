@@ -1,5 +1,7 @@
 package com.brzburg.brzburg_api.controller;
 
+import com.brzburg.brzburg_api.model.Funcionario;
+import com.brzburg.brzburg_api.repository.FuncionarioRepository;
 import com.brzburg.brzburg_api.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,12 +15,15 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    // Usa o objeto vulgo bean da lógica de login
+    // Usa o objeto da lógica de login
     @Autowired
     private AuthService authService;
 
-    /* Recebe o login e senha e tenta autenticar o usuario aqui usando um map para
-    receber o json igual ta na api */
+    // Precisamos buscar o funcionário para devolver ao front
+    @Autowired
+    private FuncionarioRepository funcionarioRepository;
+
+    /* Recebe o login e senha e tenta autenticar o usuario */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
 
@@ -26,18 +31,31 @@ public class AuthController {
             String login = loginRequest.get("login");
             String senha = loginRequest.get("senha");
 
-            // Chama o authservice que usa o passwoerdencoder e o tokenservice
+            // Chama o auth service que usa o password encoder e o token service
             String token = authService.login(login, senha);
 
-            // Se der bom retorna o token e o spring converte para um json
-            return ResponseEntity.ok(Map.of("token", token));
+            // Buscar o funcionário para retornar ao front-end
+            Funcionario funcionario = funcionarioRepository.findByUsuario(login)
+                    .orElseThrow(() -> new Exception("Funcionário não encontrado."));
+
+            // Retornar token + dados do usuário igual o front precisa
+            return ResponseEntity.ok(
+                    Map.of(
+                            "token", token,
+                            "usuario", funcionario
+                    )
+            );
 
         } catch (Exception e) {
 
-            // Se der ruim então retorna o erro 401 e já era, porta na cara
+            // Se der ruim retorna 401
             return new ResponseEntity<>(
-                    Map.of("erro", "Não autorizado", "mensagem", e.getMessage()),
-                    HttpStatus.UNAUTHORIZED);
+                    Map.of(
+                            "erro", "Não autorizado",
+                            "mensagem", e.getMessage()
+                    ),
+                    HttpStatus.UNAUTHORIZED
+            );
         }
     }
 }

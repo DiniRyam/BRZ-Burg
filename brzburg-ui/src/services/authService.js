@@ -6,8 +6,10 @@ const authService = {
   login: async (login, senha) => {
     try {
 
-      // manda os dados para o backend
-      const response = await api.post('/api/auth/login', { login, senha });
+      // CORREÇÃO AQUI:
+      // O Back-end (AuthController) espera receber a chave 'login', não 'usuario'.
+      // Mesmo que no banco seja 'usuario', na API (o carteiro) o nome do campo é 'login'.
+      const response = await api.post('/api/auth/login', { login: login, senha: senha });
       
       // O back-end retorna { token: "...", usuario: { ... } }
       return response.data; 
