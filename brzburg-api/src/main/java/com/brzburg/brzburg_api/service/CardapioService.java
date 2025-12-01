@@ -78,10 +78,9 @@ public class CardapioService {
     
     // (A lógica de PUT /api/admin/cardapio/itens/{itemId} (Atualizar) seria similar)
 
-    // procura apenas os itens nao arquivados
     public List<CardapioItem> getItensDisponibilidade() {
-        
-        return itemRepository.findByIsActiveTrue();
+        // Usa a query manual de ativos
+        return itemRepository.buscarTodosAtivos();
     }
 
     //altera o switch com a api PUT /api/admin/itens-disponibilidade/{itemId}

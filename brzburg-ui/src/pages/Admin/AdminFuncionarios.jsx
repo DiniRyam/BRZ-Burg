@@ -9,7 +9,7 @@ export default function AdminFuncionarios() {
   const [funcionarios, setFuncionarios] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [modoHistorico, setModoHistorico] = useState(false); // Toggle para ver inativos
+  const [modoHistorico, setModoHistorico] = useState(false); 
 
   // Estado do Formulário
   const [isEditing, setIsEditing] = useState(false);
@@ -17,12 +17,20 @@ export default function AdminFuncionarios() {
   const [formData, setFormData] = useState({
     nome: '',
     cpf: '',
-    login: '',
-    senha: '',
-    funcao: 'GARCOM' // Valor padrão
+    usuario: '', // CORREÇÃO: Mudado de 'login' para 'usuario'
+    senha: '', // Note: O backend espera 'senhaHash' no JSON se fosse mapeamento direto, mas geralmente enviamos 'senha' e o backend trata. 
+               // Espere, o Funcionario.java tem 'senhaHash' com @JsonProperty(access = WRITE_ONLY).
+               // Se enviarmos 'senhaHash' com o valor da senha crua, o backend vai encriptar.
+               // Vamos verificar o FuncionarioService.java.
+               // Ele faz: passwordEncoder.encode(funcionario.getSenhaHash());
+               // Então precisamos enviar o campo como 'senhaHash' no JSON para o Java popular o objeto corretamente.
+    funcao: 'GARCOM'
   });
 
-  // 1. Busca os dados (Ativos ou Histórico)
+  // --- CORREÇÃO ADICIONAL SOBRE A SENHA ---
+  // O Java espera 'senhaHash' no objeto Funcionario.
+  // Vamos ajustar o envio no handleSubmit.
+
   const fetchFuncionarios = useCallback(async () => {
     try {
       let data;
@@ -41,54 +49,60 @@ export default function AdminFuncionarios() {
     fetchFuncionarios();
   }, [fetchFuncionarios]);
 
-  // 2. Lida com a abertura do Modal (Criar vs Editar)
   const handleOpenModal = (funcionario = null) => {
     if (funcionario) {
-      // Modo Edição: Preenche os dados
       setIsEditing(true);
       setEditId(funcionario.id);
       setFormData({
         nome: funcionario.nome,
         cpf: funcionario.cpf,
-        login: funcionario.login || funcionario.usuario, // O backend pode retornar 'usuario' ou 'login'
-        senha: '', // Senha sempre vazia na edição (só preenche se quiser mudar)
+        usuario: funcionario.usuario, // CORREÇÃO: Usa 'usuario'
+        senha: '', 
         funcao: funcionario.funcao
       });
     } else {
-      // Modo Criação: Limpa tudo
       setIsEditing(false);
       setEditId(null);
-      setFormData({ nome: '', cpf: '', login: '', senha: '', funcao: 'GARCOM' });
+      setFormData({ nome: '', cpf: '', usuario: '', senha: '', funcao: 'GARCOM' }); // CORREÇÃO
     }
     setIsModalOpen(true);
   };
 
-  // 3. Enviar o Formulário (Criar ou Atualizar)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Prepara o objeto para enviar ao backend
+      // O backend espera: { nome, cpf, usuario, senhaHash, funcao }
+      const payload = {
+        nome: formData.nome,
+        cpf: formData.cpf,
+        usuario: formData.usuario,
+        funcao: formData.funcao,
+        // Se tiver senha preenchida, envia como 'senhaHash' (o backend vai encriptar)
+        // Se não, não envia (para edição sem trocar senha)
+        ...(formData.senha ? { senhaHash: formData.senha } : {})
+      };
+
       if (isEditing) {
-        // Na edição, se a senha estiver vazia, o backend ignora (não muda a senha)
-        await adminService.atualizarFuncionario(editId, formData);
+        await adminService.atualizarFuncionario(editId, payload);
         alert("Funcionário atualizado com sucesso!");
       } else {
-        await adminService.criarFuncionario(formData);
+        await adminService.criarFuncionario(payload);
         alert("Funcionário criado com sucesso!");
       }
       
       setIsModalOpen(false);
-      fetchFuncionarios(); // Recarrega a lista
+      fetchFuncionarios(); 
     } catch (error) {
       console.error("Erro ao salvar funcionário:", error);
-      alert("Erro ao salvar. Verifique se o Login ou CPF já existem.");
+      alert("Erro ao salvar. Verifique se o Usuário ou CPF já existem.");
     } finally {
       setLoading(false);
     }
   };
 
-  // 4. Arquivar (Soft Delete)
   const handleArquivar = async (id, nome) => {
     if (confirm(`Tem certeza que deseja arquivar o acesso de "${nome}"?`)) {
       try {
@@ -101,25 +115,22 @@ export default function AdminFuncionarios() {
     }
   };
 
-  // Auxiliar para cor do badge de função
   const getFuncaoColor = (funcao) => {
     switch(funcao) {
       case 'ADMIN': return 'bg-purple-100 text-purple-700';
       case 'COZINHEIRO': return 'bg-orange-100 text-orange-700';
-      default: return 'bg-blue-100 text-blue-700'; // Garçom
+      default: return 'bg-blue-100 text-blue-700';
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-gray-900">
           {modoHistorico ? 'Histórico de Funcionários (Inativos)' : 'Funcionários Ativos'}
         </h1>
         
         <div className="flex space-x-3">
-          {/* Botão de Alternar Histórico */}
           <Button 
             variant="secondary" 
             onClick={() => setModoHistorico(!modoHistorico)}
@@ -128,7 +139,6 @@ export default function AdminFuncionarios() {
             {modoHistorico ? 'Ver Ativos' : 'Ver Histórico'}
           </Button>
 
-          {/* Botão Novo (Só aparece na tela de ativos) */}
           {!modoHistorico && (
             <Button variant="primary" onClick={() => handleOpenModal()}>
               <Plus size={20} className="mr-2" />
@@ -138,7 +148,6 @@ export default function AdminFuncionarios() {
         </div>
       </div>
 
-      {/* Grid de Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {funcionarios.map((func) => (
           <Card key={func.id} className="relative group">
@@ -152,12 +161,12 @@ export default function AdminFuncionarios() {
                   {func.funcao}
                 </span>
                 <div className="mt-3 text-sm text-gray-500 space-y-1">
-                  <p>Login: <span className="font-medium text-gray-700">{func.login || func.usuario}</span></p>
+                  {/* Mostra o campo correto 'usuario' */}
+                  <p>Usuário: <span className="font-medium text-gray-700">{func.usuario}</span></p>
                   <p>CPF: {func.cpf}</p>
                 </div>
               </div>
 
-              {/* Botões de Ação (Só aparecem para ativos) */}
               {!modoHistorico && (
                 <div className="flex flex-col space-y-2">
                   <button
@@ -185,14 +194,12 @@ export default function AdminFuncionarios() {
         )}
       </div>
 
-      {/* Modal de Formulário */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={isEditing ? "Editar Funcionário" : "Novo Funcionário"}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Nome */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
             <input
@@ -204,7 +211,6 @@ export default function AdminFuncionarios() {
             />
           </div>
 
-          {/* CPF e Função (lado a lado) */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">CPF</label>
@@ -232,15 +238,15 @@ export default function AdminFuncionarios() {
             </div>
           </div>
 
-          {/* Login e Senha */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Login de Acesso</label>
+            {/* CORREÇÃO: Rótulo e campo mudados para 'Usuário' */}
+            <label className="block text-sm font-medium text-gray-700 mb-1">Usuário de Acesso</label>
             <input
               type="text"
               required
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              value={formData.login}
-              onChange={(e) => setFormData({...formData, login: e.target.value})}
+              value={formData.usuario} // Usa .usuario
+              onChange={(e) => setFormData({...formData, usuario: e.target.value})}
             />
           </div>
           
@@ -250,7 +256,6 @@ export default function AdminFuncionarios() {
             </label>
             <input
               type="password"
-              // A senha só é obrigatória se NÃO estivermos editando
               required={!isEditing} 
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
               value={formData.senha}

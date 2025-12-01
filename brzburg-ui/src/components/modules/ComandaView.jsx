@@ -1,10 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import ComandaItemCard from './ComandaItemCard'; //
-import { Button } from '../ui/Button'; //
+import ComandaItemCard from './ComandaItemCard'; 
+import { Button } from '../ui/Button'; 
 
-// --- IMPORTAR SERVIÇOS REAIS ---
 import { clienteService } from '../../services/clienteService';
 import { garcomService } from '../../services/garcomService';
 
@@ -12,14 +11,12 @@ export default function ComandaView({ role, mesaId }) {
   const [comanda, setComanda] = useState(null);
   const [totalCalculado, setTotalCalculado] = useState(0);
 
-  // Efeito para buscar dados (Polling)
   useEffect(() => {
     if (!mesaId) return;
 
     const fetchComanda = async () => {
       try {
         let data;
-        
         if (role === 'cliente') {
           data = await clienteService.getComanda(mesaId);
         } else {
@@ -28,13 +25,17 @@ export default function ComandaView({ role, mesaId }) {
         
         setComanda(data);
 
-        if (data && data.itens) {
-          const total = data.itens.reduce((acc, item) => {
+        // CORREÇÃO: agora o backend envia "itemPedidos"
+        const itens = data?.itemPedidos || []; 
+
+        if (itens.length > 0) {
+          const total = itens.reduce((acc, item) => {
             if (item.status !== 'CANCELADO' && item.status !== 'DEVOLVIDO') {
               return acc + (item.precoNoMomento * item.quantidade);
             }
             return acc;
           }, 0);
+
           setTotalCalculado(total);
         }
 
@@ -44,14 +45,11 @@ export default function ComandaView({ role, mesaId }) {
     };
 
     fetchComanda(); 
-    
     const intervalId = setInterval(fetchComanda, 10000); 
-
     return () => clearInterval(intervalId);
     
   }, [mesaId, role]); 
 
-  // Ação: Cancelar (Cliente) ou Devolver (Garçom)
   const handleItemAction = async (item) => {
     try {
       if (role === 'cliente') {
@@ -68,19 +66,16 @@ export default function ComandaView({ role, mesaId }) {
         }
       }
     } catch (error) {
-      // --- CORREÇÃO: Usamos o erro para logar no console ---
       console.error("Erro na ação do item:", error);
       alert("Erro ao processar ação. Verifique se o tempo limite expirou.");
     }
   };
 
-  // Ação: Pedir Conta (Cliente)
   const handlePedirConta = async () => {
     try {
       await clienteService.pedirConta(mesaId);
       alert("Conta solicitada! Um garçom irá até a sua mesa.");
     } catch (error) {
-      // --- CORREÇÃO: Usamos o erro para logar no console ---
       console.error("Erro ao pedir conta:", error);
       alert("Erro ao solicitar conta.");
     }
@@ -90,15 +85,18 @@ export default function ComandaView({ role, mesaId }) {
     return <div className="p-4 text-center text-gray-500">A carregar comanda...</div>;
   }
 
+  // CORREÇÃO: usa itemPedidos enviado pelo backend
+  const listaItens = comanda.itemPedidos || [];
+
   return (
     <div className="relative w-full h-full bg-gray-50 pb-28">
       
       {/* Lista de Itens */}
       <div className="p-4 space-y-3">
-        {(!comanda.itens || comanda.itens.length === 0) ? (
+        {listaItens.length === 0 ? (
            <p className="text-center text-gray-500 mt-10">A comanda está vazia.</p>
         ) : (
-           comanda.itens.map((item) => (
+           listaItens.map((item) => (
             <ComandaItemCard 
               key={item.id} 
               item={item}

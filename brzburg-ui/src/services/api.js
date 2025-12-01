@@ -3,8 +3,8 @@ import axios from 'axios';
 // cria a instancia do axios 
 const api = axios.create({
 
-  // define a url que o beck vai estar
-  baseURL: 'http://localhost:8080' 
+  // Troque 'localhost' pelo seu IP do Hotspot
+  baseURL: 'http://192.168.137.1:8080' 
 });
 
 

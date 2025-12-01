@@ -3,15 +3,20 @@ import { adminService } from '../../services/adminService';
 import Card from '../../components/ui/Card'; 
 import Modal from '../../components/ui/Modal'; 
 import { Button } from '../../components/ui/Button'; 
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, QrCode, Download } from 'lucide-react'; // Novo ícone QrCode
+import { QRCodeCanvas } from 'qrcode.react'; // Nova biblioteca
 
 export default function AdminMesas() {
   const [mesas, setMesas] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Estados de Modais
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isQrOpen, setIsQrOpen] = useState(false); // Estado para o modal do QR
+  
   const [novaMesaNome, setNovaMesaNome] = useState('');
+  const [selectedMesa, setSelectedMesa] = useState(null); // Mesa selecionada para o QR
   const [loading, setLoading] = useState(false);
 
-  // Função para buscar mesas
   const fetchMesas = useCallback(async () => {
     try {
       const data = await adminService.getMesas();
@@ -25,7 +30,6 @@ export default function AdminMesas() {
     fetchMesas();
   }, [fetchMesas]);
 
-  // Função para criar mesa
   const handleCriarMesa = async (e) => {
     e.preventDefault();
     if (!novaMesaNome.trim()) return;
@@ -34,31 +38,27 @@ export default function AdminMesas() {
     try {
       await adminService.criarMesa(novaMesaNome);
       setNovaMesaNome('');
-      setIsModalOpen(false);
-      await fetchMesas(); // Atualiza a lista
+      setIsCreateOpen(false);
+      await fetchMesas(); 
     } catch (error) {
-      console.error("Erro ao criar mesa. Tente novamente.", error);
+      console.eror("Erro ao criar mesa.", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Função para deletar mesa
   const handleDeletarMesa = async (id, nome, status) => {
-    // Regra de segurança do front-end (além da do back-end)
     if (status === 'OCUPADA') {
       alert(`A ${nome} está OCUPADA e não pode ser excluída.`);
       return;
     }
-
     if (confirm(`Tem certeza que deseja excluir a ${nome}?`)) {
       try {
         await adminService.deletarMesa(id);
         await fetchMesas();
       } catch (error) {
-        // O backend retorna 409 se estiver ocupada, capturamos aqui
         if (error.response && error.response.status === 409) {
-            alert("Erro: A mesa está ocupada e não pode ser excluída.");
+            alert("Erro: A mesa está ocupada.");
         } else {
             alert("Erro ao excluir mesa.");
         }
@@ -66,11 +66,36 @@ export default function AdminMesas() {
     }
   };
 
+  // abre o modal do qrcode
+  const handleOpenQr = (mesa) => {
+    setSelectedMesa(mesa);
+    setIsQrOpen(true);
+  };
+
+  // funcao para baixar o qrcode que a biblioteca gerou
+  const downloadQRCode = () => {
+
+    // pega o elemento canvas que a biblioteca usou
+    const canvas = document.getElementById('qr-code-canvas');
+    if (!canvas) return;
+
+    // converte a url para png
+    const pngUrl = canvas.toDataURL("image/png");
+
+    // cria um link falso e força o download 
+    const downloadLink = document.createElement("a");
+    downloadLink.href = pngUrl;
+    downloadLink.download = `qrcode-${selectedMesa.nome.replace(/\s+/g, '-')}.png`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Gerenciar Mesas</h1>
-        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+        <Button variant="primary" onClick={() => setIsCreateOpen(true)}>
           <Plus size={20} className="mr-2" />
           Nova Mesa
         </Button>
@@ -78,42 +103,52 @@ export default function AdminMesas() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {mesas.map((mesa) => (
-          <Card 
-            key={mesa.id} 
-            className="relative group"
-          >
+          <Card key={mesa.id} className="relative group">
             <div className="p-4 text-center">
               <h3 className="text-lg font-bold text-gray-900">{mesa.nome}</h3>
+              
               <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
                 mesa.status === 'LIVRE' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
               }`}>
                 {mesa.status}
               </span>
               
-              {/* Botão de Excluir que so aparece no hover ou se estiver livre */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation(); // evita espaamr cliques sem querer 
-                  handleDeletarMesa(mesa.id, mesa.nome, mesa.status);
-                }}
-                className="absolute top-2 right-2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                title="Excluir Mesa"
-              >
-                <Trash2 size={18} />
-              </button>
+              {/* Botões de Ação (Aparecem no Hover) */}
+              <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                
+                {/* Botão QR Code */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenQr(mesa);
+                  }}
+                  className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors bg-white shadow-sm"
+                  title="Ver QR Code"
+                >
+                  <QrCode size={18} />
+                </button>
+
+                {/* Botão Excluir */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeletarMesa(mesa.id, mesa.nome, mesa.status);
+                  }}
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors bg-white shadow-sm"
+                  title="Excluir Mesa"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             </div>
           </Card>
         ))}
-        
-        {mesas.length === 0 && (
-           <p className="col-span-full text-center text-gray-500 py-10">Nenhuma mesa cadastrada.</p>
-        )}
       </div>
 
-      {/* modal para criação */}
+      {/* Modal de Criação */}
       <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
         title="Cadastrar Nova Mesa"
       >
         <form onSubmit={handleCriarMesa} className="space-y-4">
@@ -124,13 +159,13 @@ export default function AdminMesas() {
               value={novaMesaNome}
               onChange={(e) => setNovaMesaNome(e.target.value)}
               placeholder="Ex: Mesa 10"
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full p-2 border border-gray-300 rounded-md"
               autoFocus
               required
             />
           </div>
           <div className="flex justify-end space-x-2 mt-6">
-            <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>
+            <Button type="button" variant="secondary" onClick={() => setIsCreateOpen(false)}>
               Cancelar
             </Button>
             <Button type="submit" variant="primary" disabled={loading}>
@@ -139,6 +174,53 @@ export default function AdminMesas() {
           </div>
         </form>
       </Modal>
+
+      {/* --- MODAL DE QR CODE --- */}
+      <Modal
+        isOpen={isQrOpen}
+        onClose={() => setIsQrOpen(false)}
+        title={selectedMesa ? `QR Code - ${selectedMesa.nome}` : "QR Code"}
+      >
+        <div className="flex flex-col items-center justify-center space-y-6 py-4">
+            
+            {/* O Código QR */}
+            <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+                {selectedMesa && (
+                    <QRCodeCanvas 
+                        id="qr-code-canvas"
+                        // Gera a URL completa para o cliente: http://site.com/m/9
+                        value={`http://192.168.137.1:5173/m/${selectedMesa.id}`}
+                        size={256}
+                        level={"H"} // Nível alto de correção de erro
+                        includeMargin={true}
+                    />
+                )}
+            </div>
+
+            <p className="text-sm text-gray-500 text-center">
+                Escaneie para acessar o cardápio da <strong>{selectedMesa?.nome}</strong>
+            </p>
+
+            <div className="flex gap-2 w-full">
+                <Button 
+                    variant="secondary" 
+                    className="flex-1"
+                    onClick={() => setIsQrOpen(false)}
+                >
+                    Fechar
+                </Button>
+                <Button 
+                    variant="primary" 
+                    className="flex-1"
+                    onClick={downloadQRCode}
+                >
+                    <Download size={18} className="mr-2" />
+                    Baixar Imagem
+                </Button>
+            </div>
+        </div>
+      </Modal>
+
     </div>
   );
 }
