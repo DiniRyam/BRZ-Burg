@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Modal from '../ui/Modal';
 import { Button } from '../ui/Button';
 import PedidoCard from './PedidoCard'; 
@@ -12,60 +12,65 @@ export default function PainelKDS({ readOnly = false }) {
   const [finalizados, setFinalizados] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  
+  // --- MUDANÇA 1: Estado de Gatilho (Trigger) ---
+  // Usamos isto para forçar a atualização quando clicamos no botão.
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const fetchPedidos = useCallback(async () => {
-    try {
-      const data = await kdsService.getDashboard(); 
-      setPendentes(data.pendentes);
-      setEmPreparo(data.emPreparo);
-      setFinalizados(data.finalizados);
-    } catch (error) {
-      console.error("Erro ao buscar dados do KDS:", error);
-    }
-    // adicao das dependencias 
-  }, [setPendentes, setEmPreparo, setFinalizados]); 
-
-  // efeito para usar o polling
+  // --- MUDANÇA 2: A lógica de busca vive DENTRO do useEffect ---
   useEffect(() => {
-    fetchPedidos(); 
+    let isMounted = true; // Previne erros se o componente desmontar durante o fetch
+
+    const fetchPedidos = async () => {
+      try {
+        const data = await kdsService.getDashboard();
+        if (isMounted) {
+          setPendentes(data.pendentes);
+          setEmPreparo(data.emPreparo);
+          setFinalizados(data.finalizados);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados do KDS:", error);
+      }
+    };
+
+    fetchPedidos(); // Busca imediata
     
-    // sta o timer para 5 segundos
     const intervalId = setInterval(fetchPedidos, 5000); 
 
-    // limpa o intervalo quando desmanchar o componente
-    return () => clearInterval(intervalId);
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
     
-    //juro daqui pra deus que n sei por que dava erro aqui e no fetchPedidos()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchPedidos]);
+  // O efeito roda quando monta E quando o 'refreshTrigger' muda
+  }, [refreshTrigger]); 
 
-  // usando o userCallback
-  const handleCardClick = useCallback((item) => {
+  const handleCardClick = (item) => {
     if (readOnly) return; 
 
     if (item.status === 'PENDENTE' || item.status === 'EM_PREPARO') {
       setSelectedItem(item);
       setIsModalOpen(true);
     }
-  }, [readOnly, setSelectedItem, setIsModalOpen]); 
+  };
 
-  // denovo
-  const handleConfirmUpdate = useCallback(async () => {
+  const handleConfirmUpdate = async () => {
     if (!selectedItem) return;
 
     try {
       await kdsService.atualizarStatus(selectedItem.id); 
       setIsModalOpen(false);
       setSelectedItem(null);
-
-      //faz uma atualização forcada
-      await fetchPedidos(); 
+      
+      // --- MUDANÇA 3: Dispara o gatilho para atualizar a lista ---
+      setRefreshTrigger(prev => prev + 1);
+      
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
     }
-  }, [selectedItem, fetchPedidos, setIsModalOpen, setSelectedItem]); 
+  };
 
-  // usando o usememo
   const modalTitle = useMemo(() => {
     if (!selectedItem) return "";
     return selectedItem.status === 'PENDENTE' 
@@ -74,7 +79,6 @@ export default function PainelKDS({ readOnly = false }) {
   }, [selectedItem]); 
 
   return (
-    // O fundo off-white 
     <div className="flex h-full w-full bg-gray-50 p-4 space-x-4 overflow-x-auto">
       
       {/* Coluna Pendentes */}
@@ -111,7 +115,7 @@ export default function PainelKDS({ readOnly = false }) {
         </div>
       </div>
 
-      {/* Coluna Finalizados / Outros */}
+      {/* Coluna Finalizados */}
       <div className="flex-1 min-w-[300px]">
         <h2 className="text-xl font-bold text-gray-900 mb-4">
           FINALIZADOS ({finalizados.length})
@@ -128,13 +132,16 @@ export default function PainelKDS({ readOnly = false }) {
         </div>
       </div>
 
-      {/* modal pra confirmar */}
+      {/* Modal de Confirmação */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         title={modalTitle} 
       >
-        <p>Avançar o pedido de <span className="font-semibold">{selectedItem?.itemNome}</span> da <span className="font-semibold">{selectedItem?.mesaNome}</span>?</p>
+        <p>
+          Avançar o pedido de <span className="font-semibold">{selectedItem?.item?.nome}</span> da <span className="font-semibold">{selectedItem?.comanda?.mesa?.nome}</span>?
+        </p>
+        
         <div className="flex justify-end space-x-2 mt-6">
           <Button 
             variant="secondary" 

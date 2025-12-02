@@ -22,9 +22,10 @@ public class KdsController {
 
     // Implementa o get /api/kds/dashboasrd é o que a cada 5 segundos do polling atualiza as telas do kds e do admin
     @GetMapping("/dashboard")
-    public ResponseEntity<Map<String, List<ItemPedido>>> getDashboard() {
-        Map<String, List<ItemPedido>> dashboard = kdsService.getDashboard();
-        return ResponseEntity.ok(dashboard);
+    // CORREÇÃO: O tipo de retorno agora é genérico (Map<String, List<Map...>>)
+    // ou simplesmente ResponseEntity<?> para facilitar.
+    public ResponseEntity<?> getDashboard() {
+        return ResponseEntity.ok(kdsService.getDashboard());
     }
 
     // Implementa o post /pedido/atualizar-status que age quando o cozinheiro move o item para a proxima coluna da sequencia de preparo

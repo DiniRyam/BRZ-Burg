@@ -1,25 +1,25 @@
 'use client'
 
 import React from 'react';
-import Card from '../ui/Card'; // puxa o card generico
+import Card from '../ui/Card'; 
 
 export default function PedidoCard({ item, onClick, readOnly }) {
 
   let borderColor = 'border-gray-200'; 
-  if (item.status === 'CONCLUIDO') {
-    borderColor = 'border-green-500'; 
-  } else if (item.status === 'CANCELADO') {
-    borderColor = 'border-red-500'; 
-  } else if (item.status === 'DEVOLVIDO') {
-    borderColor = 'border-gray-400'; 
-  }
+  if (item.status === 'CONCLUIDO') borderColor = 'border-green-500'; 
+  else if (item.status === 'CANCELADO') borderColor = 'border-red-500'; 
+  else if (item.status === 'DEVOLVIDO') borderColor = 'border-gray-400'; 
+
+  // --- CORREÇÃO: Agora lemos direto, pois o KdsService.java já preparou tudo ---
+  const nomeMesa = item.mesaNome || "Mesa ?";
+  const nomeItem = item.itemNome || "Item ?";
 
   const title = (
     <span>
-      <span className="font-bold text-gray-900">{item.mesaNome.toUpperCase()}</span>
+      <span className="font-bold text-gray-900">{nomeMesa.toUpperCase()}</span>
       <span className="font-semibold text-gray-900"> - </span>
       <span className="font-semibold text-gray-900">
-        {item.quantidade}x {item.itemNome}
+        {item.quantidade}x {nomeItem}
       </span>
     </span>
   );
@@ -34,7 +34,6 @@ export default function PedidoCard({ item, onClick, readOnly }) {
         onClick={!readOnly ? () => onClick(item) : null}
         className={`border-l-4 ${borderColor}`} 
       >
-        {/* mostra o status na coluna de finalizados */}
         {item.status !== 'PENDENTE' && item.status !== 'EM_PREPARO' && (
           <p className="mt-2 text-sm font-bold text-gray-700">
             Status: {item.status}
