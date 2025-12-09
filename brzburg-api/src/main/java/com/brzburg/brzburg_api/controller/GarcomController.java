@@ -65,10 +65,11 @@ public class GarcomController {
     @PostMapping("/comanda/fechar")
     public ResponseEntity<?> fecharConta(@RequestBody Map<String, Object> request) {
         try {
-            Integer mesaId = (Integer) request.get("mesaId");
+            
+            // Usar String.valueOf e depois parseInt para ser seguro contra tipos (Integer, Long, String)
+            Integer mesaId = Integer.parseInt(String.valueOf(request.get("mesaId")));
             String metodoPagamento = (String) request.get("metodoPagamento");
 
-            // Pega o login do funcionário logado (do Token JWT) para auditoria
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String loginFuncionario = auth.getName();
 
@@ -77,6 +78,8 @@ public class GarcomController {
             return ResponseEntity.ok(Map.of("status", "sucesso", "mensagem", "Mesa " + mesaId + " fechada."));
 
         } catch (Exception e) {
+            // Adicionei o e.printStackTrace() para ver o erro real no terminal do Java se acontecer de novo
+            e.printStackTrace(); 
             return ResponseEntity.badRequest().body(Map.of("erro", "Falha ao fechar conta", "mensagem", e.getMessage()));
         }
     }

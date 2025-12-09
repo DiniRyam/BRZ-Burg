@@ -25,6 +25,10 @@ public class Mesa {
     @Column(name = "status", nullable = false, length = 50)
     private String status;
 
+    // cria coluna is_active para o softdelete da mesa
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
     // Construtor vazio para o JPA para criar tabelas no banco com o hibernate
     public Mesa() {
     }
@@ -51,5 +55,12 @@ public class Mesa {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public boolean isActive() {
+         return isActive; 
+    }
+    public void setActive(boolean active) { 
+        isActive = active; 
     }
 }

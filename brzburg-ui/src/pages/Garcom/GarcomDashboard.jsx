@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import HeaderBar from '../../components/ui/HeaderBar'; 
 import PainelGarcom from '../../components/modules/PainelGarcom'; 
-// import { useNavigate } from 'react-router-dom'; 
+// --- CORREÇÃO 1: Importar o useNavigate ---
+import { useNavigate } from 'react-router-dom'; 
 
 export default function GarcomDashboard() {
-
-  // const navigate = useNavigate();
+  // --- CORREÇÃO 2: Inicializar o navigate ---
+  const navigate = useNavigate();
   
   // Inicialização "Lazy" do utilizador
   const [user] = useState(() => {
@@ -20,9 +21,9 @@ export default function GarcomDashboard() {
 
   // O que acontece quando o garçom clica num card de mesa ou alerta
   const handleMesaClick = (mesaId) => {
-    // Futuramente, aqui iremos navegar para a tela de detalhes
-    // navigate(`/garcom/mesa/${mesaId}`);
     console.log(`Navegar para mesa ${mesaId}`);
+    // --- CORREÇÃO 3: Agora podemos usar o navigate sem erro ---
+    navigate(`/garcom/mesa/${mesaId}`);
   };
 
   return (
@@ -34,7 +35,6 @@ export default function GarcomDashboard() {
 
       <main className="flex-1 overflow-hidden p-4 relative">
         <div className="h-full w-full bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            {/* Passamos a função de clique para o módulo */}
             <PainelGarcom onMesaClick={handleMesaClick} />
         </div>
       </main>

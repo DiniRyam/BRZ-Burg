@@ -18,12 +18,13 @@ public class MesaService {
 
     //logica para usar a api e buscar todas as mesas, o get /api/admin/mesas
     public List<Mesa> getTodasAsMesas() {
-        return mesaRepository.findAll();
+        return mesaRepository.findByIsActiveTrue();
     }
 
     //logica para a mesa ser criada com o status livre e ter ele retornado, o post /api/admin/mesas
     public Mesa criarMesa(Mesa mesa) {
         mesa.setStatus("LIVRE"); 
+        mesa.setActive(true);
         return mesaRepository.save(mesa);
     }
 
@@ -42,6 +43,7 @@ public class MesaService {
             throw new Exception("A 'Mesa " + mesa.getNome() + "' está em uso e não pode ser excluída.");
         }
 
-        mesaRepository.delete(mesa);
+        mesa.setActive(false);
+        mesaRepository.save(mesa);
     }
 }

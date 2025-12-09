@@ -1,49 +1,35 @@
 import api from './api';
 
-const getDashboard = async () => {
-  try {
+const garcomService = {
+  // GET /api/garcom/dashboard
+  getDashboard: async () => {
     const response = await api.get('/api/garcom/dashboard');
-    return response.data; // { alertas: ..., mesas: ... }
-  } catch (error) {
-    console.error("Erro ao buscar dashboard do garçom:", error);
-    throw error;
-  }
-};
+    return response.data;
+  },
 
-/**
- * Busca a comanda detalhada de uma mesa
- * GET /api/garcom/comanda/{mesaId}
- */
-const getComanda = async (mesaId) => {
-  try {
+  // GET /api/garcom/comanda/{mesaId}
+  getComanda: async (mesaId) => {
     const response = await api.get(`/api/garcom/comanda/${mesaId}`);
     return response.data;
-  } catch (error) {
-    console.error(`Erro ao buscar comanda da mesa ${mesaId}:`, error);
-    throw error;
-  }
-};
+  },
 
-/**
- * Devolve 1 unidade de um item de pedido
- * POST /api/garcom/pedido/devolver
- */
-const devolverItem = async (itemPedidoId) => {
-  try {
-    await api.post('/api/garcom/pedido/devolver', {
-      itemPedidoId,
-      quantidadeDevolver: 1,
+  // POST /api/garcom/pedido/devolver
+  devolverItem: async (itemPedidoId) => {
+    await api.post('/api/garcom/pedido/devolver', { 
+      itemPedidoId, 
+      quantidadeDevolver: 1 
     });
-  } catch (error) {
-    console.error(`Erro ao devolver item ${itemPedidoId}:`, error);
-    throw error;
+  },
+  
+  // --- NOVO MÉTODO: Fechar Conta ---
+  // POST /api/garcom/comanda/fechar
+  fecharConta: async (mesaId, metodoPagamento) => {
+    const response = await api.post('/api/garcom/comanda/fechar', {
+      mesaId,
+      metodoPagamento
+    });
+    return response.data;
   }
 };
 
-// 🔥 Arquivo final exportado
-export const garcomService = {
-  getDashboard,
-  getComanda,
-  devolverItem,
-  // fecharConta será implementado depois
-};
+export { garcomService };
