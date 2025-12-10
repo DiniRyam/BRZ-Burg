@@ -1,40 +1,62 @@
 package com.brzburg.brzburg_api.service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.UUID; // Para gerar nomes de arquivos unicos
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 
 @Service
 public class FileStorageService {
 
-    //definindo o caminho da pasta pra upar as coisas no aplication.properties
-    @Value("${app.upload.dir:${user.home}/brzburg-uploads}")
-    private String uploadDir;
+    private final Path fileStorageLocation;
 
-    //olha se a pasta de upload existe
-    public String salvarImagem(MultipartFile file) throws IOException {
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
+    public FileStorageService() {
+        // Define o caminho absoluto baseado na pasta onde o projeto está rodando
+        // Isso resolve problemas com OneDrive, Área de Trabalho e caminhos relativos
+        this.fileStorageLocation = Paths.get(System.getProperty("user.dir") + "/uploads")
+                .toAbsolutePath().normalize();
+
+        try {
+            // Cria a pasta uploads se ela não existir
+            Files.createDirectories(this.fileStorageLocation);
+            System.out.println("--- PASTA DE UPLOAD CONFIGURADA: " + this.fileStorageLocation + " ---");
+        } catch (Exception ex) {
+            throw new RuntimeException("Não foi possível criar o diretório de uploads.", ex);
         }
+    }
 
-        //muda o nome do arquivo para um nome unico com o uuid
-        String extensao = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-        String nomeFicheiroUnico = UUID.randomUUID().toString() + extensao;
+    public String salvarImagem(MultipartFile file) {
+        // Normaliza o nome do arquivo
+        String originalName = StringUtils.cleanPath(file.getOriginalFilename());
+        
+        try {
+            // Verifica se o nome do arquivo contém caracteres inválidos
+            if(originalName.contains("..")) {
+                throw new RuntimeException("Nome de arquivo inválido: " + originalName);
+            }
 
-        // define o caminho completo do destino 
-        Path caminhoDestino = uploadPath.resolve(nomeFicheiroUnico);
+            // Gera um nome único para evitar sobrescrita (ex: uuid-foto.png)
+            String fileName = UUID.randomUUID().toString() + "_" + originalName;
 
-        // copia o arquivo da requisição para o caminho do destino
-        Files.copy(file.getInputStream(), caminhoDestino);
+            // Define o caminho de destino
+            Path targetLocation = this.fileStorageLocation.resolve(fileName);
+            
+            // Copia o arquivo para o destino (substituindo se existir)
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-        // retorna a url que vai ser salva no banco
-        return "/uploads/" + nomeFicheiroUnico;
+            System.out.println("Arquivo salvo com sucesso: " + targetLocation.toString());
+
+            // Retorna o caminho relativo para salvar no banco ("/uploads/nome.png")
+            return "/uploads/" + fileName;
+
+        } catch (IOException ex) {
+            throw new RuntimeException("Não foi possível armazenar o arquivo " + originalName, ex);
+        }
     }
 }

@@ -123,7 +123,7 @@ export default function ClienteCardapio() {
               {itens.map((item) => (
                 <Card 
                   key={item.id}
-                  imageUrl={item.imagemUrl ? `http://localhost:8080${item.imagemUrl}` : null}
+                  imageUrl={item.imagemUrl ? `http://192.168.137.1:8080${item.imagemUrl}` : null}
                   title={item.nome}
                   description={
                     <div className="flex flex-col h-full justify-between">

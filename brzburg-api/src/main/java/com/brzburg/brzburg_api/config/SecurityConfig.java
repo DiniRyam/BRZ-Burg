@@ -1,9 +1,9 @@
 package com.brzburg.brzburg_api.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.brzburg.brzburg_api.repository.FuncionarioRepository;
+import com.brzburg.brzburg_api.service.TokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,17 +14,46 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final TokenService tokenService;
+    private final FuncionarioRepository funcionarioRepository;
+
+    public SecurityConfig(TokenService tokenService, FuncionarioRepository funcionarioRepository) {
+        this.tokenService = tokenService;
+        this.funcionarioRepository = funcionarioRepository;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                // --- REGRAS PÚBLICAS ---
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/cliente/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()  // Libera as imagens
+                .requestMatchers("/error").permitAll()       // <--- CRUCIAL: Libera a página de erro para evitar o falso 403
+                // -----------------------
+
+                .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                .requestMatchers("/api/garcom/**").hasAnyAuthority("GARCOM", "ADMIN")
+                .requestMatchers("/api/kds/**").hasAnyAuthority("COZINHEIRO", "ADMIN")
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(new JwtAuthenticationFilter(tokenService, funcionarioRepository), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -37,41 +66,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            // 1. ATIVA O CORS com a nossa configuração
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                .requestMatchers("/api/cliente/**").permitAll()
-                .requestMatchers("/uploads/**").permitAll() // Permite ver as imagens
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
-    }
-
-    // 2. DEFINIÇÃO DAS REGRAS DE CORS (Versão Permissiva)
-    @Bean
-    UrlBasedCorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         
-        // Permite QUALQUER origem (frontend em qualquer porta)
-        configuration.setAllowedOriginPatterns(List.of("*"));
-        
-        // Permite TODOS os métodos (GET, POST, etc.)
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
-        
-        // Permite TODOS os cabeçalhos
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        
-        // Permite credenciais
-        configuration.setAllowCredentials(true);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

@@ -52,7 +52,7 @@ public class Funcionario implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.funcao == null) return List.of();
-        return List.of(new SimpleGrantedAuthority("ROLE_" + this.funcao.toUpperCase()));
+        return List.of(new SimpleGrantedAuthority(this.funcao));
     }
 
     // O spring security vai usar a senha criptografada

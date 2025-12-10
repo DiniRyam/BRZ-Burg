@@ -12,7 +12,7 @@ export default function GarcomMesa() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
-  // 🔥 NOVO: estado para armazenar o nome real da mesa
+  // estado para armazenar o nome real da mesa
   const [mesaNome, setMesaNome] = useState(`Mesa ${mesaId}`);
 
   const [isPagamentoOpen, setIsPagamentoOpen] = useState(false);
@@ -33,7 +33,7 @@ export default function GarcomMesa() {
 
     fetchInfo();
 
-    // Carrega usuário (código antigo)
+    // Carrega usuário 
     const storedUser = localStorage.getItem('user');
     if (storedUser) setUser(JSON.parse(storedUser));
 
@@ -70,7 +70,7 @@ export default function GarcomMesa() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
 
-      {/* 🔥 NOVO: usa mesaNome no HeaderBar */}
+      {/*usa mesaNome no HeaderBar */}
       <HeaderBar user={user} title={mesaNome} rightAction={BackButton} />
 
       <div className="flex-1 relative">

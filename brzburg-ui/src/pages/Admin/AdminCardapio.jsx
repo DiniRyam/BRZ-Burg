@@ -142,7 +142,7 @@ export default function AdminCardapio() {
                 key={item.id}
 
                 // Se tiver imagemUrl do backend, adiciona o domínio, senão deixa null
-                imageUrl={item.imagemUrl ? `http://localhost:8080${item.imagemUrl}` : null}
+                imageUrl={item.imagemUrl ? `http://192.168.137.1:8080${item.imagemUrl}` : null}
                 title={item.nome}
                 description={`R$ ${item.preco.toFixed(2).replace('.', ',')}`}
                 className="relative group"
