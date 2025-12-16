@@ -4,7 +4,7 @@ import axios from 'axios';
 const api = axios.create({
 
   // Troque 'localhost' pelo seu IP do Hotspot
-  baseURL: 'http://192.168.137.1:8080' 
+  baseURL: 'http://localhost:8080' 
 });
 
 
