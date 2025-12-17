@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import HeaderBar from '../../components/ui/HeaderBar'; 
 import PainelGarcom from '../../components/modules/PainelGarcom'; 
+import { useTurnoMonitor } from '../../hooks/useTurnoMonitor'; // Importe
 // --- CORREÇÃO 1: Importar o useNavigate ---
 import { useNavigate } from 'react-router-dom'; 
 
 export default function GarcomDashboard() {
+  useTurnoMonitor();
   // --- CORREÇÃO 2: Inicializar o navigate ---
   const navigate = useNavigate();
   

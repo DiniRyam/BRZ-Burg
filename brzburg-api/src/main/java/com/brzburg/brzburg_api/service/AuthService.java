@@ -20,6 +20,10 @@ public class AuthService {
     @Autowired
     private TokenService tokenService;
 
+    // Injete o ConfiguracaoService
+    @Autowired
+    private ConfiguracaoService configuracaoService;
+
     // aqui ele olha as credenciais, e se for valido retorna um token
     public String login(String login, String senha) throws Exception {
 
@@ -32,15 +36,19 @@ public class AuthService {
             throw new Exception("Esta conta de funcionário está inativa.");
         }
 
-        // ve se a senha em texto e igual a criptografada usando o passwordencoder do securityconfig
-        if (passwordEncoder.matches(senha, funcionario.getSenhaHash())) {
-            
-            // se for igual gera e retorna um token novo
-            return tokenService.gerarToken(funcionario);
-        } else {
-
-            // se nao ele da só o erro padrao ai na maior
-            throw new Exception("Login ou senha inválidos.");
+        // --- NOVA LÓGICA DE BLOQUEIO ---
+        // Se o sistema estiver FECHADO e o usuário NÃO for ADMIN...
+        if (!configuracaoService.isSistemaAberto() && !"ADMIN".equals(funcionario.getFuncao())) {
+            throw new Exception("O restaurante está FECHADO. Apenas o Gerente pode entrar.");
         }
+        // -------------------------------
+
+        // 2. Verifica senha
+        if (!passwordEncoder.matches(senha, funcionario.getSenhaHash())) {
+            throw new Exception("Senha incorreta");
+        }
+
+        // 3. Gera token
+        return tokenService.gerarToken(funcionario);
     }
 }

@@ -52,7 +52,9 @@ public class Funcionario implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.funcao == null) return List.of();
-        return List.of(new SimpleGrantedAuthority(this.funcao));
+        // O SecurityConfig espera "ADMIN", "GARCOM", etc.
+        // Se aqui estiver escrito "ROLE_" + this.funcao, VAI DAR ERRO 403.
+        return List.of(new SimpleGrantedAuthority(this.funcao)); 
     }
 
     // O spring security vai usar a senha criptografada

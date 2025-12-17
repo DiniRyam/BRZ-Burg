@@ -215,7 +215,7 @@ export default function ClienteCardapio() {
           >
             {adding 
               ? 'Adicionando...' 
-              : `Adicionar • R$ ${(selectedItem?.preco * quantidade).toFixed(2).replace('.', ',')}`}
+              : `Pedir • R$ ${(selectedItem?.preco * quantidade).toFixed(2).replace('.', ',')}`}
           </Button>
         </div>
       </Modal>

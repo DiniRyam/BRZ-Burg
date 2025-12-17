@@ -135,7 +135,28 @@ const adminService = {
   setDisponibilidade: async (itemId, isDisponivel) => {
     const response = await api.put(`/api/admin/itens-disponibilidade/${itemId}`, { isDisponivel });
     return response.data;
+  },
+
+  // GET /api/admin/status-sistema
+  getStatusSistema: async () => {
+    const response = await api.get('/api/admin/status-sistema');
+    return response.data; // Retorna { aberto: true/false }
+  },
+
+  // POST /api/admin/turno
+  alternarTurno: async (abrir) => {
+    // Envia { abrir: true } ou { abrir: false }
+    const response = await api.post('/api/admin/turno', { abrir });
+    return response.data;
+  },
+
+  // Novo método público para verificação constante (sem precisar de estar logado)
+  getStatusPublico: async () => {
+    // Nota: Criámos este endpoint no AuthController como público
+    const response = await api.get('/api/auth/status-publico'); 
+    return response.data;
   }
 };
+
 
 export { adminService };

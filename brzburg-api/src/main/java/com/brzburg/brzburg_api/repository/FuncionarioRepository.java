@@ -5,15 +5,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Optional; // <--- Importante para o findBy funcionar
 
-// A tag do repository pro jpa, que é uma interface e vira um objeto guardado no spring, extendendo o jparepository ele cria os metodos automatico, funcionario pro modelo da tabela e o integer o tipo do dado da chave primaria
 @Repository
 public interface FuncionarioRepository extends JpaRepository<Funcionario, Integer> {
+    
+    // Busca para o Login e para evitar duplicidade de usuário
+    Optional<Funcionario> findByUsuario(String usuario);
 
-    // Método criado pra a api do admin pro dashboard, e pra achar os funcionarios
+    // --- O ERRO ESTAVA AQUI: Faltava este método ---
+    // Busca para evitar duplicidade de CPF
+    Optional<Funcionario> findByCpf(String cpf);
+    // ----------------------------------------------
+
+    // Busca para listar ativos/inativos
     List<Funcionario> findByIsActive(boolean isActive);
-
-    // Aqui é pra a api de autenticacao, do login usado
-    Optional<Funcionario> findByUsuario(String login);
 }

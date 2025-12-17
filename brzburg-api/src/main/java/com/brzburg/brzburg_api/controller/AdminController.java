@@ -41,6 +41,10 @@ public class AdminController {
     @Autowired
     private DashboardService dashboardService;
 
+    // Injete o serviço novo
+    @Autowired
+    private com.brzburg.brzburg_api.service.ConfiguracaoService configuracaoService; 
+
     // Usa o CRUD das mesas já criadas
     @GetMapping("/mesas")
     public List<Mesa> getMesas() {
@@ -259,5 +263,25 @@ public class AdminController {
         Map<String, BigDecimal> vendas = dashboardService.getVendasPagamento(getInicioPeriodo(inicio),
                 getFimPeriodo(fim));
         return ResponseEntity.ok(vendas);
+    }
+
+    // Endpoint para ver o status atual
+    @GetMapping("/status-sistema")
+    public ResponseEntity<?> getStatusSistema() {
+        boolean aberto = configuracaoService.isSistemaAberto();
+        return ResponseEntity.ok(Map.of("aberto", aberto));
+    }
+
+    // Endpoint para mudar (Abrir/Fechar)
+    @PostMapping("/turno")
+    public ResponseEntity<?> alternarTurno(@RequestBody Map<String, Boolean> request) {
+        boolean abrir = request.get("abrir");
+        if (abrir) {
+            configuracaoService.abrirTurno();
+            return ResponseEntity.ok(Map.of("mensagem", "Restaurante ABERTO com sucesso!"));
+        } else {
+            configuracaoService.fecharTurno();
+            return ResponseEntity.ok(Map.of("mensagem", "Restaurante FECHADO e telas limpas!"));
+        }
     }
 }

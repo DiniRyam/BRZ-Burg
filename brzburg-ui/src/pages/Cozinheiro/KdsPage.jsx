@@ -1,8 +1,10 @@
 import React, { useState } from 'react'; 
 import HeaderBar from '../../components/ui/HeaderBar'; 
 import PainelKDS from '../../components/modules/PainelKDS'; 
+import { useTurnoMonitor } from '../../hooks/useTurnoMonitor'; // Importe
 
 export default function KdsPage() {
+  useTurnoMonitor();
   
   // Passamos uma função para o useState. O React executa esta função 
   // APENAS na primeira renderização para definir o valor inicial.

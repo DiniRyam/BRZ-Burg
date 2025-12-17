@@ -22,7 +22,7 @@ public class BrzburgApiApplication {
         return args -> {
             // Verifica se o admin já existe
             if (repository.findByUsuario("admin").isEmpty()) {
-                System.out.println("Criando usuário ADMIN padrão...");
+                System.out.println("Criando usuário ADMIN padrão");
                 Funcionario admin = new Funcionario();
                 admin.setNome("Admin Principal");
                 admin.setCpf("00000000000");

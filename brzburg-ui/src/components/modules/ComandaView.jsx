@@ -45,7 +45,7 @@ export default function ComandaView({ role, mesaId }) {
     };
 
     fetchComanda(); 
-    const intervalId = setInterval(fetchComanda, 10000); 
+    const intervalId = setInterval(fetchComanda, 10000); //pooling
     return () => clearInterval(intervalId);
     
   }, [mesaId, role]); 
@@ -53,13 +53,11 @@ export default function ComandaView({ role, mesaId }) {
   const handleItemAction = async (item) => {
     try {
       if (role === 'cliente') {
-        // eslint-disable-next-line no-restricted-globals
         if (confirm("Deseja realmente cancelar este item?")) {
              await clienteService.cancelarPedido(item.id); 
              alert("Item cancelado com sucesso!");
         }
       } else if (role === 'garcom') {
-        // eslint-disable-next-line no-restricted-globals
         if (confirm("Confirmar devolução do item?")) {
             await garcomService.devolverItem(item.id);
             alert("Item devolvido.");

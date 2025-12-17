@@ -38,16 +38,19 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // --- REGRAS PÚBLICAS ---
+                // 1. REGRAS PÚBLICAS (Primeiro lugar)
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/cliente/**").permitAll()
-                .requestMatchers("/uploads/**").permitAll()  // Libera as imagens
-                .requestMatchers("/error").permitAll()       // <--- CRUCIAL: Libera a página de erro para evitar o falso 403
-                // -----------------------
+                .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                .requestMatchers("/api/status-publico").permitAll() // <--- NOVA REGRA AQUI (NO TOPO)
 
+                // 2. REGRAS DE PERMISSÃO (Segundo lugar)
                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                 .requestMatchers("/api/garcom/**").hasAnyAuthority("GARCOM", "ADMIN")
                 .requestMatchers("/api/kds/**").hasAnyAuthority("COZINHEIRO", "ADMIN")
+                
+                // 3. REGRA FINAL (Sempre por último)
                 .anyRequest().authenticated()
             )
             .addFilterBefore(new JwtAuthenticationFilter(tokenService, funcionarioRepository), UsernamePasswordAuthenticationFilter.class);
